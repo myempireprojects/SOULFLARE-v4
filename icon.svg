@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06020e"/><stop offset="100%" stop-color="#0e0519"/>
+    </linearGradient>
+    <linearGradient id="fl" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" stop-color="#e8175d"/><stop offset="50%" stop-color="#d4a853"/><stop offset="100%" stop-color="#ff4500"/>
+    </linearGradient>
+    <radialGradient id="gw" cx="50%" cy="78%" r="44%">
+      <stop offset="0%" stop-color="#e8175d" stop-opacity="0.5"/><stop offset="100%" stop-color="#06020e" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <ellipse cx="256" cy="405" rx="155" ry="62" fill="url(#gw)"/>
+  <path d="M256,432C188,432,136,384,136,316c0-48,26-88,54-110c-8,30,10,50,30,32c-10-32,10-74,36-102c0,0-14,50,6,78c14-24,26-60,50-80c10,34,0,60-10,78c28-20,48-52,62-78c24,34,16,82-4,112c22-16,38-36,34-60c22,26,14,74-6,104c20-12,34-34,30-56c22,40-6,122-28,150c10-22,4-48-14-64c4,32-10,68-32,84c6-26-4-52-24-66c14,38-2,74-64,98z" fill="url(#fl)"/>
+  <text x="256" y="498" font-family="Georgia,serif" font-size="66" font-weight="900" text-anchor="middle" fill="#d4a853" letter-spacing="5" opacity="0.9">SF</text>
+</svg>

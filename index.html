@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"/>
+<meta name="theme-color" content="#e8175d"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="SoulFlare"/>
+<title>SoulFlare 🔥</title>
+<link rel="manifest" href="./manifest.json"/>
+<link rel="icon" href="./icon.svg" type="image/svg+xml"/>
+<link rel="apple-touch-icon" href="./icon.svg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;background:#06020e;overscroll-behavior:none;overflow-x:hidden;}
+#root{min-height:100vh;min-height:100dvh;}
+/* ── Animations ── */
+@keyframes hb{0%,100%{transform:scale(1)}14%{transform:scale(1.32)}28%{transform:scale(1)}42%{transform:scale(1.18)}70%{transform:scale(1)}}
+@keyframes heartbeat{0%,60%,100%{transform:scale(1)}15%{transform:scale(1.28)}30%{transform:scale(1.08)}45%{transform:scale(1.22)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes rise{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+@keyframes spin360{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes reveal{from{transform:perspective(700px) rotateY(85deg) scale(.88);opacity:0}to{transform:perspective(700px) rotateY(0) scale(1);opacity:1}}
+@keyframes flipCard{from{transform:perspective(600px) rotateY(-90deg);opacity:0}to{transform:perspective(600px) rotateY(0);opacity:1}}
+@keyframes glow{0%,100%{box-shadow:0 0 20px #e8175d33}50%{box-shadow:0 0 44px #e8175d70}}
+@keyframes goldGlow{0%,100%{box-shadow:0 0 18px #d4a85322}50%{box-shadow:0 0 40px #d4a85566}}
+@keyframes inferno{0%,100%{box-shadow:0 0 22px #ff450033}50%{box-shadow:0 0 55px #ff4500aa}}
+@keyframes pop{0%{transform:scale(.78);opacity:0}65%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes chaosIn{from{transform:translateY(-80px) scale(.9);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+@keyframes branchIn{from{transform:scale(.82) translateY(16px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+@keyframes flicker{0%,100%{opacity:1}50%{opacity:.74}}
+@keyframes flameDance{0%,100%{transform:scale(1) rotate(-1deg)}50%{transform:scale(1.08) rotate(1.5deg)}}
+@keyframes barFill{from{width:0}to{width:var(--w,100%)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+/* ── Base ── */
+.sfb{cursor:pointer;border:none;outline:none;font-family:inherit;transition:transform .18s,background .2s,box-shadow .2s;}
+.sfb:not(:disabled):hover{transform:scale(1.03)!important;}
+.sfb:not(:disabled):active{transform:scale(.97)!important;}
+.sfb:disabled{opacity:.5;cursor:default;}
+.sfi{outline:none;font-family:inherit;}
+.sfi:focus{border-color:#e8175d!important;}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-thumb{background:#e8175d28;border-radius:2px;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel" data-presets="react">
+const {useState,useEffect,useRef,useCallback,useMemo}=React;
+
+/* ════════════════════════════════════════
+   ARCHETYPES
+   ════════════════════════════════════════ */
+const ARCHETYPES=[
+  {id:"romantics", emoji:"🌹", label:"The Romantics",   desc:"Emotional depth & vulnerability fuel us",
+   weights:{vulnerability:14,affection:12,truth:8,revelation:8}},
+  {id:"playmakers",emoji:"🎮", label:"The Playmakers",  desc:"Laughter, games & light energy define us",
+   weights:{fun:16,activity:14,puzzle:8}},
+  {id:"spirituals",emoji:"🙏", label:"The Spirituals",  desc:"Faith is the foundation of our love",
+   weights:{bible:18,trust:10,vulnerability:8}},
+  {id:"passionates",emoji:"🔥",label:"The Passionates", desc:"We burn hot and hold nothing back",
+   weights:{spicy:16,revelation:12,trust:8}},
+  {id:"partners",  emoji:"🤝", label:"The Partners",    desc:"Trust, teamwork & growth are our core",
+   weights:{trust:14,activity:10,puzzle:12}},
+  {id:"adventurers",emoji:"⚡",label:"The Adventurers", desc:"Surprise us — we're ready for anything",
+   weights:{/* max chaos — no preference */}},
+];
+
+/* ════════════════════════════════════════
+   SECRET MISSIONS
+   ════════════════════════════════════════ */
+const MISSIONS=[
+  {id:"m1",task:"Make your partner genuinely laugh at least 3 times",                    pts:30},
+  {id:"m2",task:"Touch your partner's hand or arm during every single card",              pts:25},
+  {id:"m3",task:"Say 'I love you' at least 5 times throughout the game",                 pts:20},
+  {id:"m4",task:"Maintain unbroken eye contact during 3 full card instructions",         pts:25},
+  {id:"m5",task:"Whisper something privately in your partner's ear at least 4 times",    pts:30},
+  {id:"m6",task:"Pray together at least twice — even briefly — during the game",         pts:20},
+  {id:"m7",task:"Give each other a long, genuine hug 3 separate times",                  pts:25},
+  {id:"m8",task:"Use your partner's name in every single response you give",              pts:20},
+  {id:"m9",task:"Be the first to say 'I'm sorry' whenever tension arises",               pts:25},
+  {id:"m10",task:"Compliment something specific about your partner in every activity",   pts:20},
+];
+
+/* ════════════════════════════════════════
+   CHAOS EVENTS
+   ════════════════════════════════════════ */
+const CHAOS=[
+  {id:"lightning",emoji:"⚡",name:"LIGHTNING ROUND!",sub:"3 rapid questions · 20 seconds each",color:"#ffd700",
+   desc:"Speed mode activated. No thinking — only feeling. Each question gets exactly 20 seconds. Go!",effect:"speed",rounds:3},
+  {id:"reversal", emoji:"🔄",name:"TOTAL REVERSAL!", sub:"Partners swap everything",color:"#9c27b0",
+   desc:"Switch seats, switch roles. The reader becomes the actor, the actor becomes the reader. One full round.",effect:"swap",rounds:1},
+  {id:"truthbomb",emoji:"💣",name:"TRUTH BOMB!",     sub:"No escape. Pure honesty.",color:"#ff4500",
+   desc:"The game demands your most honest, unfiltered answer yet. No softening. No deflecting. Just truth.",effect:"intensify",rounds:1},
+  {id:"wild",     emoji:"🃏",name:"WILD CARD!",       sub:"Anything. Anywhere. Anytime.",color:"#e8175d",
+   desc:"All rules suspended. The game ignores your mode, your level, your expectations. Brace yourselves.",effect:"wild",rounds:1},
+  {id:"mirror",   emoji:"🪞",name:"MIRROR TEST!",    sub:"Both answer · then compare",color:"#00bcd4",
+   desc:"Both partners answer this card separately — don't show each other — then reveal simultaneously and compare.",effect:"mirror",rounds:1},
+  {id:"spicestreak",emoji:"🌶️",name:"SPICE STREAK!", sub:"3 rounds of rising heat",color:"#ff6b35",
+   desc:"The next 3 rounds are spicy and progressively more intense. Flame energy spikes. There is no cooling down.",effect:"spicy_streak",rounds:3},
+  {id:"oracle",   emoji:"🔮",name:"THE ORACLE!",     sub:"A prophecy sealed in time",color:"#d4a853",
+   desc:"Both write a prediction about your relationship on paper right now. Seal it. Open it only on your next anniversary.",effect:"prophecy",rounds:1},
+  {id:"double",   emoji:"🎯",name:"DOUBLE DOWN!",    sub:"Double points — or bust",color:"#4caf50",
+   desc:"This puzzle is worth double points. But if you get it wrong you lose 8 points. Choose your answer carefully.",effect:"double_pts",rounds:1},
+  {id:"forfeit",  emoji:"🎲",name:"DARE OR TRUTH!",  sub:"Choose your fate",color:"#ff9800",
+   desc:"Each partner secretly writes 'DARE' or 'TRUTH' on their hand. Reveal simultaneously — you must do what you wrote.",effect:"dare_or_truth",rounds:1},
+  {id:"slowburn", emoji:"🕯️",name:"SLOW BURN!",      sub:"60 seconds · no words · just presence",color:"#c2185b",
+   desc:"Set a 60-second timer. Hold your partner's hands. No speaking. No phones. Just breathe, feel, and be present with each other.",effect:"presence",rounds:1},
+];
+
+/* ════════════════════════════════════════
+   PRONOUNS
+   ════════════════════════════════════════ */
+const PR={male:{sub:"he",obj:"him",pos:"his"},female:{sub:"she",obj:"her",pos:"her"},other:{sub:"they",obj:"them",pos:"their"}};
+function inj(t,p1,p2){
+  if(!t)return"";
+  const a=PR[p1?.gender]||PR.other,b=PR[p2?.gender]||PR.other;
+  return t
+    .replace(/{p1}/g,p1?.name||"Partner 1").replace(/{p2}/g,p2?.name||"Partner 2")
+    .replace(/{sub1}/g,a.sub).replace(/{obj1}/g,a.obj).replace(/{pos1}/g,a.pos)
+    .replace(/{sub2}/g,b.sub).replace(/{obj2}/g,b.obj).replace(/{pos2}/g,b.pos)
+    .replace(/{Sub1}/g,a.sub[0].toUpperCase()+a.sub.slice(1))
+    .replace(/{Sub2}/g,b.sub[0].toUpperCase()+b.sub.slice(1));
+}
+const shuffle=a=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;};
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+
+/* ════════════════════════════════════════
+   ENERGY ZONES (replace fixed modes)
+   ════════════════════════════════════════ */
+const ZONES_E={
+  gentle: {label:"Gentle Mode",   emoji:"🌸",color:"#e879a0",range:[0,30]},
+  warm:   {label:"Warm Mode",     emoji:"❤️",color:"#c2185b",range:[31,55]},
+  intense:{label:"Intense Mode",  emoji:"🔥",color:"#ff6b35",range:[56,78]},
+  inferno:{label:"Inferno Mode",  emoji:"⚡",color:"#ff4500",range:[79,100]},
+};
+const getZone=e=>e<=30?"gentle":e<=55?"warm":e<=78?"intense":"inferno";
+const zoneInfo=e=>ZONES_E[getZone(e)];
+
+/* ════════════════════════════════════════
+   CARD DATABASE — 80+ cards, all modes
+   rarity: common(60%) rare(30%) epic(8%) legendary(2%)
+   energyGain: flame meter gain on completion
+   branchable: triggers a path-choice afterward
+   ════════════════════════════════════════ */
+const CARDS=[
+  /* ─── FUN ─── */
+  {id:"f01",cat:"fun",hot:1,dur:null,rarity:"common",energyGain:4,branchable:false,
+   title:"Tiny Habits",inst:"{p1}, name one tiny habit of {p2} that secretly makes you smile every time {sub2} does it.",
+   fu:"Hold unbroken eye contact for 5 seconds."},
+  {id:"f02",cat:"fun",hot:1,dur:30,rarity:"common",energyGain:5,branchable:false,
+   title:"Impression Game",inst:"{p1}, do your best impression of {p2} for 30 seconds. {p2} may react — but cannot stop {obj1}!",
+   fu:"Both score the performance out of 10."},
+  {id:"f03",cat:"fun",hot:2,dur:null,rarity:"common",energyGain:4,branchable:false,
+   title:"Alter Ego",inst:"{p1}, if {p2} were a fictional character, who would {sub2} be — and why exactly?",
+   fu:"{p2}, agree or disagree — with a smile."},
+  {id:"f04",cat:"fun",hot:2,dur:null,rarity:"common",energyGain:5,branchable:false,
+   title:"Finish My Sentence",inst:"Take turns completing these without thinking: 'When I first saw you I thought…' and 'The weirdest thing I love about you is…'",
+   fu:"Which answer surprised you most?"},
+  {id:"f05",cat:"fun",hot:2,dur:null,rarity:"rare",energyGain:6,branchable:false,
+   title:"Couple Karaoke",inst:"Both pick a song that reminds you of your relationship — even if just the title. Explain why.",
+   fu:"Hum 5 seconds of the song if you can."},
+  /* ─── TRUTH ─── */
+  {id:"t01",cat:"truth",hot:2,dur:null,rarity:"common",energyGain:6,branchable:false,
+   title:"First Impression",inst:"{p1}, what was your very first honest thought when you saw {p2} for the first time?",
+   fu:"{p2}, was {sub1} right — or completely off?"},
+  {id:"t02",cat:"truth",hot:3,dur:null,rarity:"common",energyGain:7,branchable:true,
+   title:"Best Part of My Day",inst:"{p1}, which moment of any average day involving {p2} is your absolute favourite? Describe it.",
+   fu:"{p2}, did you know this? Respond honestly."},
+  {id:"t03",cat:"truth",hot:3,dur:null,rarity:"common",energyGain:7,branchable:false,
+   title:"Dream Date",inst:"{p2}, describe your perfect dream date with {p1} — location, time, mood, food, everything.",
+   fu:"{p1}, which part excites you most?"},
+  {id:"t04",cat:"truth",hot:4,dur:null,rarity:"common",energyGain:8,branchable:false,
+   title:"Safe Place",inst:"{p1}, describe the specific moment when {p2} made you feel completely emotionally safe.",
+   fu:"{p2}, what do you remember most about that moment?"},
+  {id:"t05",cat:"truth",hot:4,dur:null,rarity:"common",energyGain:8,branchable:true,
+   title:"Unspoken Thought",inst:"{p1}, share one thought or feeling about {p2} you have never said out loud.",
+   fu:"Take a breath, {p2}. Respond with only warmth."},
+  {id:"t06",cat:"truth",hot:5,dur:null,rarity:"rare",energyGain:10,branchable:true,
+   title:"Turning Point",inst:"{p2}, describe the exact moment you realised {p1} was different from everyone else.",
+   fu:"{p1}, had {sub2} told you this before? How does it feel hearing it now?"},
+  {id:"t07",cat:"truth",hot:3,dur:null,rarity:"common",energyGain:7,branchable:false,
+   title:"Hidden Talent",inst:"{p2}, share one thing you can do that would genuinely surprise {p1} — a skill, a quirk, or a secret ability.",
+   fu:"{p1}, did you know this? Why or why not?"},
+  {id:"t08",cat:"truth",hot:5,dur:null,rarity:"rare",energyGain:9,branchable:true,
+   title:"The Moment I Knew",inst:"{p1}, describe the precise moment — where you were, what {sub2} said or did — when you knew you were falling for {p2}.",
+   fu:"{p2}, were you feeling the same thing at that moment?"},
+  /* ─── ACTIVITY ─── */
+  {id:"a01",cat:"activity",hot:2,dur:45,rarity:"common",energyGain:8,branchable:false,
+   title:"Silent Stare",inst:"Sit knee-to-knee. Maintain unbroken eye contact for 45 seconds — no laughing, no looking away.",
+   fu:"Whoever broke first owes the other a genuine compliment."},
+  {id:"a02",cat:"activity",hot:2,dur:30,rarity:"common",energyGain:7,branchable:false,
+   title:"Mirror Mirror",inst:"{p1} leads slow flowing movements for 30 seconds — {p2} mirrors every move. Then switch!",
+   fu:"Name one thing you noticed about each other."},
+  {id:"a03",cat:"activity",hot:2,dur:60,rarity:"common",energyGain:8,branchable:false,
+   title:"Portrait Artists",inst:"Each draws the other's face — without lifting the pen AND without looking at the paper. 60 seconds each.",
+   fu:"React to each other's artwork. No defending your technique."},
+  {id:"a04",cat:"activity",hot:2,dur:null,rarity:"common",energyGain:7,branchable:false,
+   title:"Thumb Battle",inst:"Best of 3 thumb-wrestling rounds. Loser reveals one compliment they have been secretly holding back.",
+   fu:"Winner earns the right to ask one question of their choice."},
+  {id:"a05",cat:"activity",hot:5,dur:60,rarity:"rare",energyGain:12,branchable:false,
+   title:"Slow Dance",inst:"Stand close and slow dance for 60 seconds — no music needed. Let the silence lead you.",
+   fu:"Whisper one thing you never want your relationship to lose."},
+  {id:"a06",cat:"activity",hot:4,dur:null,rarity:"common",energyGain:9,branchable:false,
+   title:"Palm Reading",inst:"{p1}, hold {pos2} hand gently. Trace each line slowly and invent a love story from what you see.",
+   fu:"{p2}, share one part of that story you wish were true."},
+  {id:"a07",cat:"activity",hot:5,dur:90,rarity:"rare",energyGain:11,branchable:false,
+   title:"Back-to-Back",inst:"Sit back-to-back. {p1} describes a feeling — {p2} draws it on paper without speaking. 90 seconds.",
+   fu:"Compare what was described and what was drawn. Discuss the gap."},
+  {id:"a08",cat:"activity",hot:4,dur:30,rarity:"rare",energyGain:9,branchable:false,
+   title:"Long Embrace",inst:"Give each other a genuine, unhurried hug. Hold on for 30 full seconds. Do not rush.",
+   fu:"{p1}, what was running through your mind during that hug?"},
+  {id:"a09",cat:"activity",hot:3,dur:null,rarity:"common",energyGain:7,branchable:false,
+   title:"Forehead Moment",inst:"{p1}, stand before {p2}. Hold {pos2} face in both hands. Press your forehead to {pos2}. 20 seconds of silence.",
+   fu:"Both say one word describing what you felt."},
+  {id:"a10",cat:"activity",hot:6,dur:null,rarity:"rare",energyGain:10,branchable:false,
+   title:"Eyes Closed",inst:"{p2}, close your eyes. {p1}, guide {obj2} gently across the room using only soft touch — no words. Then whisper something {obj2} should know.",
+   fu:"Switch roles."},
+  {id:"a11",cat:"activity",hot:7,dur:null,rarity:"rare",energyGain:11,branchable:true,
+   title:"Fall For Me",inst:"{p1} stands behind {p2}. {p2} closes {pos2} eyes and falls backward slowly — trusting {p1} to catch {obj2}. Three times.",
+   fu:"Discuss: where else in your relationship do you fall and trust the other to catch you?"},
+  /* ─── VULNERABILITY ─── */
+  {id:"v01",cat:"vulnerability",hot:5,dur:null,rarity:"common",energyGain:9,branchable:true,
+   title:"Quiet Fear",inst:"{p1}, share one quiet fear you carry about love, relationships, or your future together.",
+   fu:"{p2} responds only with reassurance — no advice, no problem-solving."},
+  {id:"v02",cat:"vulnerability",hot:5,dur:null,rarity:"common",energyGain:9,branchable:false,
+   title:"My Weak Spot",inst:"{p2}, share one way you sometimes make it hard for others to love you — and name what {p1} does that helps you open up anyway.",
+   fu:"{p1}, affirm {obj2} with one specific example of how {sub2} has grown."},
+  {id:"v03",cat:"vulnerability",hot:6,dur:null,rarity:"rare",energyGain:11,branchable:true,
+   title:"Letter I Never Sent",inst:"{p1}, think of one thing you have wanted to tell {p2} but never found the right moment. Say it now — as if writing a letter.",
+   fu:"{p2} listens without interrupting. Respond with only: 'Thank you for telling me.'"},
+  {id:"v04",cat:"vulnerability",hot:7,dur:null,rarity:"epic",energyGain:13,branchable:true,
+   title:"My Shadow",inst:"{p1}, share one part of yourself you've tried to hide — even from {p2}. A flaw, a fear, a wound. No more hiding.",
+   fu:"{p2}, after listening, say exactly one thing you love about that hidden part."},
+  /* ─── AFFECTION ─── */
+  {id:"af01",cat:"affection",hot:5,dur:120,rarity:"rare",energyGain:12,branchable:false,
+   title:"Love Flood",inst:"{p1}, for 2 full minutes say everything you love about {p2} — do not stop, do not repeat. Just love.",
+   fu:"{p2}, your only response is: 'I receive all of that.'"},
+  {id:"af02",cat:"affection",hot:6,dur:null,rarity:"rare",energyGain:11,branchable:false,
+   title:"Hands Tell Everything",inst:"{p1}, hold {pos2} hands for 60 seconds. Look at them. Tell a story about what these hands represent to you.",
+   fu:"{p2}, respond with what you wish your hands could do more for {p1}."},
+  {id:"af03",cat:"affection",hot:4,dur:null,rarity:"common",energyGain:9,branchable:false,
+   title:"Name By Name",inst:"{p1}, say {pos2} full name — slowly, warmly, with intention. Describe what comes to mind when you say it.",
+   fu:"{p2}, describe how it felt to hear {sub1} say your name like that."},
+  {id:"af04",cat:"affection",hot:7,dur:null,rarity:"epic",energyGain:13,branchable:true,
+   title:"Slow Burn",inst:"Set 60 seconds on the timer. Both hold hands. No speaking. No phones. Just breathe together and feel the weight of each other's presence.",
+   fu:"Both complete this: 'In this silence, I felt…'"},
+  /* ─── REVELATION ─── */
+  {id:"r01",cat:"revelation",hot:5,dur:null,rarity:"common",energyGain:10,branchable:true,
+   title:"Hidden Admiration",inst:"{p2}, reveal something about {p1} you have secretly admired but never mentioned. Be specific.",
+   fu:"{p1}, look into {pos2} eyes and say: 'Thank you for seeing me.'"},
+  {id:"r02",cat:"revelation",hot:6,dur:null,rarity:"rare",energyGain:11,branchable:true,
+   title:"What You Don't Know",inst:"{p1}, share something personal about yourself that {p2} may not fully know — a fear, a dream, or a wound.",
+   fu:"{p2}, listen without interrupting. When {sub1} finishes, say: 'I'm glad you told me.'"},
+  {id:"r03",cat:"revelation",hot:7,dur:null,rarity:"rare",energyGain:12,branchable:true,
+   title:"The Real Story",inst:"{p1}, reveal what was really going through your mind during one of your most memorable moments together.",
+   fu:"{p2}, share what {sub2} was thinking in that exact same moment."},
+  {id:"r04",cat:"revelation",hot:8,dur:null,rarity:"epic",energyGain:14,branchable:true,
+   title:"My Everything",inst:"{p1}, describe what life without {p2} would feel like. Be completely honest — do not soften it.",
+   fu:"{p2} responds: 'That's why I choose you, every single day.'"},
+  {id:"r05",cat:"revelation",hot:9,dur:null,rarity:"epic",energyGain:15,branchable:true,
+   title:"If Tonight Were Last",inst:"{p2}, if tonight were your last night together, what would you want {p1} to know? Say it all.",
+   fu:"{p1}, respond with everything {sub1} would want {p2} to know in return."},
+  {id:"r06",cat:"revelation",hot:8,dur:null,rarity:"legendary",energyGain:18,branchable:false,
+   title:"The Real You",inst:"{p1}, share one version of yourself that you hide from the world — but want {p2} to fully know and fully receive.",
+   fu:"{p2}, affirm that part of {obj1}. Name specifically what is beautiful about it. Hold nothing back."},
+  /* ─── TRUST ─── */
+  {id:"tr01",cat:"trust",hot:5,dur:null,rarity:"common",energyGain:9,branchable:false,
+   title:"Full Honesty",inst:"{p1}, complete this sentence out loud: 'The one thing I am most afraid to tell you is…'",
+   fu:"{p2}, hold {pos1} hand while {sub1} speaks. Do not let go."},
+  {id:"tr02",cat:"trust",hot:4,dur:null,rarity:"common",energyGain:8,branchable:false,
+   title:"I Trust You Because",inst:"{p1}, name three specific moments that built your trust in {p2}. Be detailed — no rushing.",
+   fu:"{p2}, which of those three meant the most — and why?"},
+  {id:"tr03",cat:"trust",hot:8,dur:null,rarity:"epic",energyGain:14,branchable:true,
+   title:"No More Walls",inst:"{p1}, confess one protective wall you have built that you want to tear down — for {p2}.",
+   fu:"{p2}, tell {obj1} exactly how you will help {obj1} feel safe without that wall."},
+  {id:"tr04",cat:"trust",hot:7,dur:null,rarity:"rare",energyGain:12,branchable:false,
+   title:"Let Me In",inst:"{p2}, share one part of your past that shaped who you are today — something you rarely tell anyone.",
+   fu:"{p1}, respond with one way that story makes you love {obj2} more deeply."},
+  /* ─── BIBLE ─── */
+  {id:"b01",cat:"bible",hot:1,dur:null,rarity:"common",energyGain:6,branchable:false,
+   title:"Prayer Moment",inst:"Together name one thing you are grateful for about each other. Then each say a short prayer for the other — out loud.",
+   fu:"Hold hands for 10 seconds in complete silence."},
+  {id:"b02",cat:"bible",hot:2,dur:null,rarity:"common",energyGain:6,branchable:false,
+   title:"Love Scripture",inst:"Recite 1 Corinthians 13:4-7 slowly together — 'Love is patient, love is kind…' Speak each line as if for the very first time.",
+   fu:"Which quality do you most want to grow in this year?"},
+  {id:"b03",cat:"bible",hot:3,dur:null,rarity:"rare",energyGain:8,branchable:false,
+   title:"Proverbs on Love",inst:"Read Proverbs 17:17 — 'A friend loves at all times.' Discuss: how does this describe your relationship right now?",
+   fu:"Each name one specific way you will live this verse for the other."},
+  {id:"b04",cat:"bible",hot:3,dur:null,rarity:"rare",energyGain:9,branchable:false,
+   title:"Faith in Love",inst:"{p1}, pray out loud for {p2} — speak into {pos2} gifts, dreams, and what you believe God is doing in {pos2} life.",
+   fu:"{p2}, share one thing you believe God is calling you both into together."},
+  {id:"b05",cat:"bible",hot:4,dur:null,rarity:"epic",energyGain:10,branchable:false,
+   title:"Song of Songs",inst:"Together read Song of Solomon 3:4 — 'I have found the one whom my soul loves.' Both describe: when did you first feel this about each other?",
+   fu:"Hold each other for 20 seconds in silence. Let the verse breathe."},
+  /* ─── SPICY ─── */
+  {id:"s01",cat:"spicy",hot:7,dur:90,rarity:"common",energyGain:13,branchable:false,
+   title:"Close Enough",inst:"Sit extremely close — foreheads nearly touching. No speaking. No moving. Breathe together for 90 seconds. Let the tension build.",
+   fu:"Whisper what you were thinking when time runs out."},
+  {id:"s02",cat:"spicy",hot:8,dur:null,rarity:"rare",energyGain:14,branchable:true,
+   title:"Burning Confession",inst:"{p1}, tell {p2} one desire, fantasy, or craving you have never fully expressed out loud.",
+   fu:"Discuss openly whether it could realistically become part of your relationship."},
+  {id:"s03",cat:"spicy",hot:8,dur:null,rarity:"rare",energyGain:14,branchable:false,
+   title:"What I Want",inst:"{p2}, describe exactly what you want {p1} to do — emotionally, physically, romantically — right now.",
+   fu:"{p1}, name one thing from that list you will do before this night is over."},
+  {id:"s04",cat:"spicy",hot:9,dur:null,rarity:"epic",energyGain:15,branchable:true,
+   title:"Say It Slowly",inst:"{p1}, look into {pos2} eyes and describe slowly and deliberately exactly what {sub1} finds irresistible about {obj2}.",
+   fu:"{p2} says only: 'Tell me more.'"},
+  {id:"s05",cat:"spicy",hot:9,dur:null,rarity:"rare",energyGain:14,branchable:false,
+   title:"Slow Touch",inst:"{p1}, trace {pos2} arm from shoulder to fingertips with deliberate, unhurried intention. {p2}, close your eyes and feel every movement.",
+   fu:"Switch — {p2} now traces {pos1} arm the same way."},
+  {id:"s06",cat:"spicy",hot:10,dur:null,rarity:"epic",energyGain:16,branchable:true,
+   title:"The Question",inst:"{p1}, ask {p2} the one intimate or romantic question you have always been too shy to ask.",
+   fu:"{p2} answers with total honesty — nothing held back."},
+  {id:"s07",cat:"spicy",hot:8,dur:null,rarity:"rare",energyGain:13,branchable:false,
+   title:"Hidden Desire",inst:"{p1}, describe one specific thing {p2} has done that you found deeply attractive — {sub2} may not even know it.",
+   fu:"{p2}, tell {p1} you'll do it again intentionally."},
+  {id:"s08",cat:"spicy",hot:10,dur:null,rarity:"legendary",energyGain:18,branchable:true,
+   title:"Ultimate Vulnerability",inst:"Both partners write one thing they have never told another human being — not even each other. Fold the paper. Exchange. Read in silence. Then talk.",
+   fu:"Hold each other. Say nothing for 30 seconds. Then say 'I choose you — all of you.'"},
+  /* ─── PUZZLE ─── */
+  {id:"p01",cat:"puzzle",hot:1,dur:null,rarity:"common",energyGain:10,pid:"ez1",
+   title:"Word of Love",inst:"Work together to unscramble this word. Both must agree before you answer!",fu:"💎 +10 Points!"},
+  {id:"p02",cat:"puzzle",hot:1,dur:null,rarity:"common",energyGain:10,pid:"ez2",
+   title:"Emoji Love Code",inst:"Decode this emoji sequence together. What phrase does it spell?",fu:"💎 +10 Points!"},
+  {id:"p03",cat:"puzzle",hot:1,dur:null,rarity:"common",energyGain:10,pid:"ez3",
+   title:"Love Riddle",inst:"Solve this riddle together. One final answer only.",fu:"💎 +10 Points!"},
+  {id:"p04",cat:"puzzle",hot:5,dur:60,rarity:"rare",energyGain:15,pid:"cz1",
+   title:"Love Cipher",inst:"Decode this secret message together. 60 seconds — go!",fu:"💎 +20 Points!"},
+  {id:"p05",cat:"puzzle",hot:5,dur:null,rarity:"epic",energyGain:18,pid:"cz2",
+   title:"Double Meaning",inst:"Two answers — one simple, one deep about your relationship. Find both.",fu:"💎 +20 Points!"},
+];
+
+/* ════════════════════════════════════════
+   PUZZLES
+   ════════════════════════════════════════ */
+const PUZZLES={
+  ez1:{q:"Unscramble this word:",clue:"T  R  S  U  T",ans:"TRUST",hint:"The foundation of every relationship",opts:["TURNS","TRUST","TRUSS","TUTOR"],pts:10},
+  ez2:{q:"What phrase do these emojis represent?",clue:"❤️ + 🔑 → 🚪",ans:"Love unlocks every door",hint:"What does love open?",opts:["Love is a house","Love unlocks every door","Keys to my heart","Open your heart"],pts:10},
+  ez3:{q:"Solve this riddle:",clue:"The more I am shared between two people, the more there is of me. I cannot be bought. What am I?",ans:"Love",hint:"It multiplies when given freely",opts:["Time","Money","Love","Joy"],pts:10},
+  cz1:{q:"Decode this message (A=1, B=2, C=3…):",clue:"9 · 12 · 15 · 22 · 5 · 25 · 15 · 21",ans:"I LOVE YOU",hint:"Count each number's letter in the alphabet",opts:["I NEED YOU","I LOVE YOU","I WANT YOU","I MISS YOU"],pts:20},
+  cz2:{q:"Two answers — one simple, one deep:",clue:"I have no body yet I am deeply felt. I have no voice yet I speak louder than words. What am I?",ans:"Emotion / Love",hint:"What moves you without moving?",opts:["Wind / Fear","Music / Peace","Emotion / Love","Touch / Trust"],pts:20},
+};
+
+/* ════════════════════════════════════════
+   SPIN ZONES
+   ════════════════════════════════════════ */
+const ZONES=[
+  {n:"Sweet Words",  f:"Tell him the one quality that makes him irreplaceable to you",           m:"Whisper 3 things you love about her, slowly, into her ear"},
+  {n:"Move Together",f:"Dance with him like nobody is watching — 30 full seconds",               m:"Slow dance with her for 30 seconds — no music needed"},
+  {n:"Secret Share", f:"Share one thing you have never dared to say out loud",                   m:"Whisper a secret you have never told another soul"},
+  {n:"Gentle Touch", f:"Trace his face slowly with your fingertips for 20 seconds",             m:"Give her a genuine 30-second shoulder massage"},
+  {n:"Eye Lock",     f:"Look into his eyes and describe in one sentence what you see",           m:"Hold her gaze silently for 15 seconds — do not look away"},
+  {n:"Dream Aloud",  f:"Share one dream you have for this relationship",                         m:"Describe your perfect future together in 60 seconds"},
+  {n:"Make Me Laugh",f:"Tell him the funniest thing he has ever done",                          m:"Make her laugh by any means — 30 seconds on the clock"},
+  {n:"Memory Lane",  f:"Recall the moment when you were most proud of him",                     m:"Share your favourite memory of her that always makes you smile"},
+  {n:"Kiss",         f:"Kiss his cheek and whisper: 'You are mine'",                            m:"Give her a slow, intentional forehead kiss"},
+  {n:"Breathe",      f:"Rest your head on his chest for 20 seconds and simply breathe",         m:"Hold her hands and take 5 slow, deep breaths together"},
+  {n:"Right Now",    f:"Complete this: 'Right now what I need most from you is…'",              m:"Say the one thing you love most about her in this exact moment"},
+  {n:"Ask Away",     f:"Ask him one question about your future you have never dared to ask",    m:"Ask her the one question you always wanted to ask but never dared"},
+];
+
+/* ════════════════════════════════════════
+   CARDS OF FATE
+   ════════════════════════════════════════ */
+const FATE=[
+  {id:"f01",type:"question",emoji:"🔮",title:"Truly Seen",body:"What is one thing your partner does that makes you feel truly seen — without even trying?"},
+  {id:"f02",type:"question",emoji:"💛",title:"Falling Moment",body:"Describe the exact moment you knew your partner was different from everyone you had ever met."},
+  {id:"f03",type:"question",emoji:"🌙",title:"Late Night",body:"What thought about your partner comes to you late at night, when everything is quiet?"},
+  {id:"f04",type:"question",emoji:"🎬",title:"Our Movie",body:"If your relationship were a movie, what would the title be — and who would play each of you?"},
+  {id:"f05",type:"question",emoji:"🎵",title:"Our Song",body:"What song most describes your relationship right now — and why exactly that one?"},
+  {id:"f06",type:"question",emoji:"🌱",title:"Growth",body:"In what one specific way has your partner made you a better version of yourself?"},
+  {id:"f07",type:"question",emoji:"🙈",title:"Confession",body:"What is one thing you wish you could change about how you treat your partner?"},
+  {id:"f08",type:"question",emoji:"🔑",title:"Love Language",body:"Describe your partner's love language — then honestly rate how well you actually practice it."},
+  {id:"f09",type:"activity",emoji:"✍️",title:"Write It",body:"Write your partner's name on their palm with your fingertip — slowly. Say one word for each letter as you trace it."},
+  {id:"f10",type:"activity",emoji:"🤗",title:"Hold On",body:"Give each other a genuine hug. Do not let go for 30 full seconds. No rushing — just hold on."},
+  {id:"f11",type:"activity",emoji:"🌊",title:"Breathe",body:"Face each other. Hold hands. Breathe completely in sync for 30 seconds — inhale together, exhale together."},
+  {id:"f12",type:"activity",emoji:"💃",title:"One Minute",body:"Slow dance for a full minute. At the 30-second mark, whisper something meaningful to your partner."},
+  {id:"f13",type:"activity",emoji:"👁️",title:"Eye Witness",body:"Look into each other's eyes without speaking for 20 full seconds. Then complete: 'What I see in you is…'"},
+  {id:"f14",type:"activity",emoji:"🖐️",title:"Hand Story",body:"Hold your partner's hands and trace each finger slowly. Tell a story about what these hands mean to you."},
+  {id:"f15",type:"activity",emoji:"📝",title:"Love Note",body:"Write a 3-sentence love letter to your partner — right now, from the heart. Read it aloud when finished."},
+  {id:"f16",type:"activity",emoji:"🙏",title:"3 Gratitudes",body:"Both name 3 specific things they are grateful for about the other. No repeating allowed."},
+  {id:"f17",type:"quiz",emoji:"🧠",title:"Know Me?",body:"Secretly write your partner's favourite food, colour, and childhood dream. Compare simultaneously!"},
+  {id:"f18",type:"quiz",emoji:"❓",title:"My Fear",body:"Write your partner's greatest fear. Reveal at the same time — how close were you?"},
+  {id:"f19",type:"quiz",emoji:"🎯",title:"Perfect Day",body:"Describe your partner's perfect Saturday in full detail. They rate your accuracy out of 10."},
+  {id:"f20",type:"quiz",emoji:"💬",title:"One Word",body:"What word would your partner use to describe you? Write it — then reveal and compare."},
+  {id:"f21",type:"dare",emoji:"🎤",title:"Serenade",body:"Sing at least 30 seconds of any song to your partner. No backing out. No lip-syncing."},
+  {id:"f22",type:"dare",emoji:"🎭",title:"Be Me",body:"Do your best impression of your partner for 30 seconds. They may gently correct you."},
+  {id:"f23",type:"dare",emoji:"💌",title:"Say It",body:"Tell your partner something meaningful you have been meaning to say for a while — but have not yet. Right now."},
+  {id:"f24",type:"dare",emoji:"🌟",title:"Compliment Storm",body:"In 60 seconds, give your partner as many genuine compliments as you can. They respond to each one with 'thank you.'"},
+];
+
+/* ════════════════════════════════════════
+   ADAPTIVE ENGINE
+   ════════════════════════════════════════ */
+const ENGINE={
+  // Weighted random pick
+  weightedPick(options,weights){
+    const total=weights.reduce((a,b)=>a+b,0);
+    let r=Math.random()*total;
+    for(let i=0;i<options.length;i++){r-=weights[i];if(r<=0)return options[i];}
+    return options[options.length-1];
+  },
+
+  // What type of round is this?
+  selectRoundType(round,energy,recentTypes,chaosRoundsLeft){
+    if(round===0)return"card";
+    if(chaosRoundsLeft>0)return"card"; // chaos already active
+    const types=["card","card","card","spin","fate","puzzle","chaos"];
+    const recency=(t)=>recentTypes.slice(-4).includes(t)?0.2:1;
+    const w=[
+      55*recency("card"),
+      energy>40?18*recency("spin"):5,
+      15*recency("fate"),
+      18*recency("puzzle"),
+      round>3?14:3,
+    ];
+    return this.weightedPick(["card","spin","fate","puzzle","chaos"],w);
+  },
+
+  // Which category of card?
+  selectCategory(energy,recentCats,archetype){
+    const base={
+      fun:10, truth:18, activity:18, vulnerability:12, affection:10,
+      revelation:12, trust:12, bible:6,
+      spicy: energy>75?22:energy>55?14:energy>35?6:0,
+    };
+    const bonus=(ARCHETYPES.find(a=>a.id===archetype)||{weights:{}}).weights;
+    Object.entries(bonus).forEach(([k,v])=>{if(base[k]!==undefined)base[k]+=v;});
+    recentCats.slice(-3).forEach(c=>{if(base[c])base[c]=Math.max(2,base[c]-14);});
+    const cats=Object.keys(base).filter(k=>base[k]>0);
+    const ws=cats.map(k=>base[k]);
+    return this.weightedPick(cats,ws);
+  },
+
+  // Pick the actual card
+  selectCard(cat,energy,usedIds,branchDepth,chaosEffect){
+    const minHot=Math.max(1,Math.floor((energy-20)/12)+branchDepth);
+    const maxHot=Math.min(10,Math.ceil(energy/10)+2+branchDepth);
+    let pool=CARDS.filter(c=>c.cat===cat&&!usedIds.includes(c.id)&&c.hot>=minHot&&c.hot<=maxHot);
+    if(!pool.length)pool=CARDS.filter(c=>c.cat===cat&&!usedIds.includes(c.id));
+    if(!pool.length)pool=CARDS.filter(c=>!usedIds.includes(c.id));
+    if(!pool.length)pool=CARDS;
+    if(chaosEffect==="wild")pool=CARDS.filter(c=>!usedIds.includes(c.id));
+    if(chaosEffect==="intensify")pool=pool.filter(c=>c.hot>=7)||pool;
+    const wtd=[];
+    pool.forEach(c=>{const w=c.rarity==="legendary"?1:c.rarity==="epic"?2:c.rarity==="rare"?5:10;for(let i=0;i<w;i++)wtd.push(c);});
+    return wtd[Math.floor(Math.random()*wtd.length)]||pool[0];
+  },
+
+  // Should a branch trigger?
+  shouldBranch(card,round){return card?.branchable&&round>2&&Math.random()<0.65;},
+
+  // Should chaos fire?
+  shouldChaos(round,recentCats,chaosRoundsLeft){
+    if(round<4||chaosRoundsLeft>0)return false;
+    const boring=recentCats.slice(-4).length===4&&new Set(recentCats.slice(-4)).size<=2;
+    return Math.random()<(boring?0.55:0.22);
+  },
+};
+
+/* ════════════════════════════════════════
+   COMPONENT
+   ════════════════════════════════════════ */
+function SoulFlare(){
+  /* Loading */
+  const [loadPct,   setLoadPct]   = useState(0);
+  /* Core */
+  const [screen,    setScreen]    = useState("loading");
+  const [players,   setPlayers]   = useState([]);
+  const [couples,   setCouples]   = useState([]);
+  const [archetype, setArchetype] = useState(null);
+  const [flameE,    setFlameE]    = useState(50);   // 0-100 energy
+  const [round,     setRound]     = useState(0);
+  const [totalRnds, setTotalRnds] = useState(24);
+  const [card,      setCard]      = useState(null);
+  const [usedIds,   setUsedIds]   = useState([]);
+  const [recentCats,setRecentCats]= useState([]);
+  const [recentTypes,setRecentTypes]=useState([]);
+  const [points,    setPoints]    = useState(0);
+  const [cardAnim,  setCardAnim]  = useState(false);
+  const [voice,     setVoice]     = useState(true);
+  const [timeLeft,  setTimeLeft]  = useState(0);
+  const [timerOn,   setTimerOn]   = useState(false);
+  /* Chaos */
+  const [chaosEv,   setChaosEv]   = useState(null); // current event
+  const [chaosLeft, setChaosLeft] = useState(0);    // rounds remaining
+  const [showChaos, setShowChaos] = useState(false);
+  const [chaosEffect,setChaosEffect]=useState(null);
+  /* Branch */
+  const [showBranch,setShowBranch]= useState(false);
+  const [branchDepth,setBranchDepth]=useState(0);  // -1/0/+1
+  /* Secret mission */
+  const [mission,   setMission]   = useState(null);
+  const [showMission,setShowMission]=useState(false);
+  const [missionDone,setMissionDone]=useState(false);
+  /* Puzzle */
+  const [puzData,   setPuzData]   = useState(null);
+  const [puzSel,    setPuzSel]    = useState(null);
+  const [puzDone,   setPuzDone]   = useState(false);
+  const [puzDouble, setPuzDouble] = useState(false);
+  /* Spin */
+  const [spinAngle, setSpinAngle] = useState(0);
+  const [spinning,  setSpinning]  = useState(false);
+  const [spinRes,   setSpinRes]   = useState(null);
+  /* Fate */
+  const [fateCard,  setFateCard]  = useState(null);
+  const [fateFlip,  setFateFlip]  = useState(false);
+  const [fateTurn,  setFateTurn]  = useState(0);
+  /* Setup */
+  const [newName,   setNewName]   = useState("");
+  const [newGender, setNewGender] = useState("female");
+  const [linkStep,  setLinkStep]  = useState(null);
+  const [ageWarned, setAgeWarned] = useState(false);
+  /* Continue */
+  const [contPrompt,setContPrompt]= useState(false);
+  const [contCount, setContCount] = useState(6);
+  /* PWA */
+  const [canInstall,setCanInstall]= useState(false);
+  const [roundType, setRoundType] = useState("card"); // card/spin/fate/puzzle
+
+  const couplesRef = useRef([]);
+  const timerRef   = useRef(null);
+  const contRef    = useRef(null);
+  const pendRef    = useRef(null);
+  const installRef = useRef(null);
+  const fateDeckRef= useRef([]);
+  const fateIdxRef = useRef(0);
+  const flameRef   = useRef(50);  // ref for use in closures
+
+  useEffect(()=>{couplesRef.current=couples;},[couples]);
+  useEffect(()=>{flameRef.current=flameE;},[flameE]);
+
+  /* ── Loading sequence ── */
+  useEffect(()=>{
+    if(screen!=="loading")return;
+    let p=0;
+    const iv=setInterval(()=>{
+      p+=Math.random()*18+4;
+      if(p>=100){p=100;clearInterval(iv);setTimeout(()=>setScreen("welcome"),380);}
+      setLoadPct(Math.min(100,p));
+    },110);
+    return()=>clearInterval(iv);
+  },[screen]);
+
+  /* ── PWA ── */
+  useEffect(()=>{
+    window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installRef.current=e;setCanInstall(true);});
+    window.addEventListener("appinstalled",()=>setCanInstall(false));
+  },[]);
+
+  /* ── Voice ── */
+  const speak=useCallback(text=>{
+    if(!voice)return;
+    const s=window.speechSynthesis; if(!s)return;
+    const go=()=>{
+      s.cancel();
+      const u=new SpeechSynthesisUtterance(text);
+      u.rate=1.0;u.pitch=1.0;u.volume=1;
+      const vs=s.getVoices();
+      const pref=vs.find(v=>["Samantha","Karen","Moira","Victoria","Tessa","Google UK English Female"].some(n=>v.name.includes(n)))
+        ||vs.find(v=>v.lang.startsWith("en")&&!v.name.toLowerCase().includes("male"))||vs[0];
+      if(pref)u.voice=pref; s.speak(u);
+    };
+    s.getVoices().length>0?go():(s.onvoiceschanged=go);
+  },[voice]);
+
+  /* ── Save / Load ── */
+  const saveG=()=>{try{localStorage.setItem("sfv3",JSON.stringify({round,totalRnds,couples:couplesRef.current,usedIds,points,flameE:flameRef.current,archetype,recentCats,recentTypes,chaosLeft,branchDepth,fateTurn,fateIdx:fateIdxRef.current}));}catch{}};
+  const loadG=()=>{try{const x=localStorage.getItem("sfv3");return x?JSON.parse(x):null;}catch{return null;}};
+  const clearG=()=>{try{localStorage.removeItem("sfv3");}catch{}};
+
+  /* ── Timer ── */
+  const startTimer=s=>{
+    clearInterval(timerRef.current);
+    setTimeLeft(s);setTimerOn(true);
+    timerRef.current=setInterval(()=>{
+      setTimeLeft(p=>{if(p<=1){clearInterval(timerRef.current);setTimerOn(false);speak("Time is up!");return 0;}return p-1;});
+    },1000);
+  };
+
+  /* ── Flame Energy ── */
+  const addFlame=(n)=>{
+    setFlameE(e=>{const nv=Math.min(100,Math.max(0,e+n));flameRef.current=nv;return nv;});
+  };
+
+  /* ── Player management ── */
+  const addPlayer=()=>{
+    if(!newName.trim()||players.length>=12)return;
+    setPlayers(p=>[...p,{id:Date.now(),name:newName.trim(),gender:newGender,partner:null}]);
+    setNewName("");
+  };
+  const removePlayer=id=>setPlayers(p=>p.filter(x=>x.id!==id).map(x=>x.partner===id?{...x,partner:null}:x));
+  const linkPlayers=pid=>{
+    if(!linkStep){setLinkStep(pid);return;}
+    if(linkStep===pid){setLinkStep(null);return;}
+    setPlayers(prev=>{
+      const a=prev.find(p=>p.id===linkStep),b=prev.find(p=>p.id===pid);
+      return prev.map(p=>{
+        if(p.id===a?.partner&&p.id!==pid)return{...p,partner:null};
+        if(p.id===b?.partner&&p.id!==linkStep)return{...p,partner:null};
+        if(p.id===linkStep)return{...p,partner:pid};
+        if(p.id===pid)return{...p,partner:linkStep};
+        return p;
+      });
+    });
+    setLinkStep(null);
+  };
+  const getCouples=()=>{
+    const seen=new Set(),list=[];
+    players.forEach(p=>{
+      if(p.partner&&!seen.has(p.id)){
+        const pt=players.find(x=>x.id===p.partner);
+        if(pt){list.push([p,pt]);seen.add(p.id);seen.add(pt.id);}
+      }
+    });
+    return list;
+  };
+
+  /* ── Draw a card from the adaptive engine ── */
+  const drawCard=(rNum,cl,ids,cats,types,energy,depth,chaosEff,timerOverride)=>{
+    setCardAnim(false);
+    clearInterval(timerRef.current);setTimerOn(false);
+    setPuzData(null);setPuzSel(null);setPuzDone(false);setPuzDouble(false);
+    const cat=ENGINE.selectCategory(energy,cats,archetype);
+    const raw=ENGINE.selectCard(cat,energy,ids,depth,chaosEff);
+    const couple=cl[0]||[];
+    const p1=couple[0]||{name:"Partner 1",gender:"female"};
+    const p2=couple[1]||{name:"Partner 2",gender:"male"};
+    const c={...raw,inst:inj(raw.inst,p1,p2),fu:inj(raw.fu,p1,p2),couple:`${p1.name} & ${p2.name}`};
+    const nu=[...ids,raw.id];
+    const nc=[...cats,cat].slice(-6);
+    const nt=[...types,"card"].slice(-6);
+    setCard(c);setUsedIds(nu);setRecentCats(nc);setRecentTypes(nt);
+    if(raw.pid){setPuzData(PUZZLES[raw.pid]);if(chaosEff==="double_pts")setPuzDouble(true);}
+    const dur=timerOverride??raw.dur;
+    if(dur&&!raw.pid)startTimer(dur);
+    setTimeout(()=>{setCardAnim(true);speak(c.inst);},160);
+    return{ids:nu,cats:nc,types:nt};
+  };
+
+  /* ── Start a round (master function) ── */
+  const startRound=(rNum,cl,ids,cats,types,energy,depth,chaosRmn,chaosEff)=>{
+    const type=ENGINE.selectRoundType(rNum,energy,types,chaosRmn);
+
+    if(type==="spin"||types[types.length-1]==="spin"){
+      setRoundType("spin");setCard(null);setSpinRes(null);setSpinning(false);
+      const nt=[...types,"spin"].slice(-6);setRecentTypes(nt);
+      speak("Spin the Bottle! Let fate decide your next move.");
+      return;
+    }
+    if(type==="fate"){
+      const fc=fateDeckRef.current[fateIdxRef.current%FATE.length];
+      fateIdxRef.current+=1;
+      setRoundType("fate");setCard(null);setFateCard(fc);setFateFlip(false);
+      setFateTurn(t=>(t+1)%2);
+      const nt=[...types,"fate"].slice(-6);setRecentTypes(nt);
+      speak("Cards of Fate! Draw your card and discover what awaits.");
+      return;
+    }
+    if(type==="puzzle"){
+      // find a puzzle card
+      const pCards=CARDS.filter(c=>c.cat==="puzzle"&&!ids.includes(c.id));
+      if(pCards.length){
+        const raw=pCards[Math.floor(Math.random()*pCards.length)];
+        setRoundType("card");
+        const couple=cl[0]||[];
+        const p1=couple[0]||{name:"Partner 1",gender:"female"};
+        const p2=couple[1]||{name:"Partner 2",gender:"male"};
+        const c={...raw,inst:inj(raw.inst,p1,p2),fu:inj(raw.fu,p1,p2),couple:`${p1.name} & ${p2.name}`};
+        const nu=[...ids,raw.id],nc=[...cats,"puzzle"].slice(-6),nt=[...types,"puzzle"].slice(-6);
+        setCard(c);setUsedIds(nu);setRecentCats(nc);setRecentTypes(nt);
+        if(raw.pid)setPuzData(PUZZLES[raw.pid]);
+        setTimeout(()=>{setCardAnim(true);speak(c.inst);},160);
+        return;
+      }
+    }
+    if(type==="chaos"){
+      const ev=pick(CHAOS);
+      setChaosEv(ev);setChaosLeft(ev.rounds);setChaosEffect(ev.effect);
+      setShowChaos(true);
+      speak(`${ev.name} ${ev.desc}`);
+      // After chaos reveal, draw a card
+      setTimeout(()=>{
+        setShowChaos(false);
+        setRoundType("card");
+        const timerOvr=ev.effect==="speed"?20:undefined;
+        const depth2=ev.effect==="intensify"?2:0;
+        drawCard(rNum,cl,ids,cats,types,energy,depth2,ev.effect,timerOvr);
+      },3200);
+      return;
+    }
+    // Regular card
+    setRoundType("card");
+    const timerOvr=chaosEff==="speed"?20:undefined;
+    drawCard(rNum,cl,ids,cats,types,energy,depth,chaosEff,timerOvr);
+  };
+
+  /* ── Advance to next round ── */
+  const goNext=()=>{
+    clearInterval(timerRef.current);
+    setShowBranch(false);
+    const nr=round+1;
+    if(nr>=totalRnds){
+      clearG();setScreen("finale");
+      speak("Congratulations! SoulFlare is complete. May your love burn brighter every single day.");
+      return;
+    }
+    // Energy-based chaos check
+    if(ENGINE.shouldChaos(nr,recentCats,chaosLeft)){
+      const ev=pick(CHAOS);
+      setChaosEv(ev);setChaosLeft(ev.rounds);setChaosEffect(ev.effect);
+      setShowChaos(true);
+      speak(`${ev.name} ${ev.desc}`);
+      setTimeout(()=>{
+        setShowChaos(false);
+        setRound(nr);
+        const timerOvr=ev.effect==="speed"?20:undefined;
+        const nextDepth=ev.effect==="intensify"?branchDepth+1:branchDepth;
+        setRoundType("card");
+        const res=drawCard(nr,couplesRef.current,usedIds,recentCats,recentTypes,flameRef.current,nextDepth,ev.effect,timerOvr);
+      },3200);
+    } else {
+      const newChaosLeft=Math.max(0,chaosLeft-1);
+      const eff=newChaosLeft>0?chaosEffect:null;
+      if(newChaosLeft===0)setChaosEffect(null);
+      setChaosLeft(newChaosLeft);
+      setRound(nr);
+      startRound(nr,couplesRef.current,usedIds,recentCats,recentTypes,flameRef.current,branchDepth,newChaosLeft,eff);
+    }
+  };
+
+  const handleCardComplete=()=>{
+    // Add energy for completing card
+    if(card){addFlame(card.energyGain||6);}
+    // Check for spicy content & age gate
+    if(card?.cat==="spicy"&&!ageWarned){setAgeWarned(true);return;}
+    // Check for branch
+    if(ENGINE.shouldBranch(card,round)){setShowBranch(true);}
+    else{goNext();}
+  };
+
+  const chooseBranch=(depth)=>{
+    setBranchDepth(depth);
+    const energyBoost=depth>0?10:depth===0?5:2;
+    addFlame(energyBoost);
+    setShowBranch(false);
+    goNext();
+  };
+
+  const confirmAge=()=>{setAgeWarned(false);if(ENGINE.shouldBranch(card,round)){setShowBranch(true);}else{goNext();}};
+
+  /* ── Begin / Resume ── */
+  const beginNew=cl=>{
+    clearG();
+    const tr=22+Math.floor(Math.random()*8); // 22-29 rounds
+    fateDeckRef.current=shuffle([...FATE]);fateIdxRef.current=0;
+    setCouples(cl);couplesRef.current=cl;
+    setRound(0);setFlameE(50);flameRef.current=50;
+    setTotalRnds(tr);setUsedIds([]);setCard(null);setPoints(0);
+    setRecentCats([]);setRecentTypes([]);setChaosLeft(0);setChaosEffect(null);
+    setBranchDepth(0);setFateTurn(0);setAgeWarned(false);
+    const m=pick(MISSIONS);setMission(m);
+    setScreen("game");
+    speak(`Welcome to SoulFlare. ${cl[0][0].name} and ${cl[0][1].name}, your journey begins now.`);
+    startRound(0,cl,[],[],[],50,0,0,null);
+  };
+
+  const resumeGame=()=>{
+    clearInterval(contRef.current);setContPrompt(false);
+    const sv=loadG();if(!sv){beginNew(pendRef.current);return;}
+    fateDeckRef.current=shuffle([...FATE]);fateIdxRef.current=sv.fateIdx||0;
+    setCouples(sv.couples);couplesRef.current=sv.couples;
+    setRound(sv.round);setTotalRnds(sv.totalRnds||24);
+    setUsedIds(sv.usedIds||[]);setPoints(sv.points||0);
+    setFlameE(sv.flameE||50);flameRef.current=sv.flameE||50;
+    setArchetype(sv.archetype);setRecentCats(sv.recentCats||[]);
+    setRecentTypes(sv.recentTypes||[]);setChaosLeft(sv.chaosLeft||0);
+    setBranchDepth(sv.branchDepth||0);setFateTurn(sv.fateTurn||0);
+    const m=pick(MISSIONS);setMission(m);
+    setScreen("game");speak(`Welcome back. Continuing from round ${sv.round+1}.`);
+    startRound(sv.round,sv.couples,sv.usedIds||[],sv.recentCats||[],sv.recentTypes||[],sv.flameE||50,sv.branchDepth||0,sv.chaosLeft||0,null);
+  };
+
+  const handleIgnite=()=>{
+    const c=getCouples();if(!c.length){alert("Link at least one couple first!");return;}
+    if(!archetype){alert("Choose your couple archetype first!");return;}
+    const sv=loadG();
+    if(sv){
+      pendRef.current=c;setContCount(6);setContPrompt(true);
+      clearInterval(contRef.current);
+      contRef.current=setInterval(()=>setContCount(p=>{
+        if(p<=1){clearInterval(contRef.current);setContPrompt(false);beginNew(pendRef.current);return 0;}
+        return p-1;
+      }),1000);
+    } else {beginNew(c);}
+  };
+
+  const handleInstall=async()=>{
+    if(!installRef.current)return;
+    installRef.current.prompt();
+    const{outcome}=await installRef.current.userChoice;
+    if(outcome==="accepted")setCanInstall(false);
+    installRef.current=null;
+  };
+
+  /* ── Spin ── */
+  const handleSpin=()=>{
+    if(spinning)return;
+    setSpinning(true);setSpinRes(null);
+    const extra=1080+Math.floor(Math.random()*720),na=spinAngle+extra;
+    setSpinAngle(na);
+    setTimeout(()=>{
+      setSpinning(false);
+      const top=Math.floor((na%360)/30)%12,bot=(top+6)%12;
+      setSpinRes({top,bot});
+      addFlame(6+Math.floor(Math.random()*8));
+    },3800);
+  };
+
+  /* ── Zone color for energy ── */
+  const zi=zoneInfo(flameE);
+  const energyColor=flameE<=30?"#64b5f6":flameE<=55?"#e879a0":flameE<=78?"#ff6b35":"#ff4500";
+  const energyBg=flameE<=30?"linear-gradient(90deg,#1565c0,#42a5f5)":
+                 flameE<=55?"linear-gradient(90deg,#e8175d,#e879a0)":
+                 flameE<=78?"linear-gradient(90deg,#ff6b35,#d4a853)":
+                 "linear-gradient(90deg,#ff4500,#ff6b35,#ffd700)";
+
+  /* ── Shared UI ── */
+  const root={minHeight:"100vh",minHeight:"100dvh",
+    background:"linear-gradient(150deg,#06020e 0%,#0e0519 50%,#06020f 100%)",
+    fontFamily:"'Cormorant Garamond','Georgia',serif",color:"#f5e6d3",
+    display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+    position:"relative",overflow:"hidden"};
+  const Sparks=()=>(
+    <div style={{position:"absolute",inset:0,overflow:"hidden",pointerEvents:"none",zIndex:0}}>
+      {Array.from({length:20}).map((_,i)=>(
+        <div key={i} style={{position:"absolute",
+          width:i%5===0?"4px":i%3===0?"3px":"2px",height:i%5===0?"4px":i%3===0?"3px":"2px",
+          borderRadius:"50%",background:i%2===0?energyColor+"55":"#d4a85344",
+          left:`${(i*14+6)%97}%`,top:`${(i*17+8)%94}%`,
+          animation:`float ${2.8+i*.33}s ease-in-out infinite`,animationDelay:`${i*.27}s`}}/>
+      ))}
+    </div>
+  );
+  const HR=({c="#d4a853"})=><div style={{width:"100%",height:1,background:`linear-gradient(90deg,transparent,${c}88,transparent)`,margin:"10px 0"}}/>;
+
+  /* ══════════════════════════════════════
+     LOADING SCREEN
+     ══════════════════════════════════════ */
+  if(screen==="loading") return(
+    <div style={root}>
+      <div style={{textAlign:"center",zIndex:1,padding:"0 20px",animation:"fadeIn .6s ease"}}>
+        <div style={{fontSize:90,animation:"heartbeat 1.8s ease-in-out infinite",marginBottom:18,lineHeight:1}}>❤️‍🔥</div>
+        <h1 style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(48px,14vw,78px)",fontWeight:900,
+          background:"linear-gradient(130deg,#e8175d,#d4a853,#e8175d)",backgroundSize:"200%",
+          WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",
+          animation:"shimmer 2.5s linear infinite",lineHeight:.9,letterSpacing:".07em",marginBottom:10}}>
+          SOUL<br/>FLARE</h1>
+        <p style={{color:"#6a5a7a",fontStyle:"italic",fontSize:16,letterSpacing:".2em",marginBottom:32}}>where love burns brightest</p>
+        {/* Loading bar */}
+        <div style={{width:220,height:3,background:"#1a1030",borderRadius:4,margin:"0 auto",overflow:"hidden"}}>
+          <div style={{height:"100%",width:`${loadPct}%`,
+            background:"linear-gradient(90deg,#e8175d,#d4a853)",
+            borderRadius:4,transition:"width .15s ease"}}/>
+        </div>
+        <p style={{color:"#4a3a5a",fontSize:12,marginTop:12,animation:"flicker 1.4s infinite"}}>
+          {loadPct<40?"Lighting the flame…":loadPct<80?"Preparing your journey…":"Almost ready…"}
+        </p>
+      </div>
+    </div>
+  );
+
+  /* ══════════════════════════════════════
+     WELCOME SCREEN
+     ══════════════════════════════════════ */
+  if(screen==="welcome") return(
+    <div style={root}><Sparks/>
+      <div style={{textAlign:"center",zIndex:1,maxWidth:420,width:"100%",padding:"22px 20px",animation:"rise .7s ease"}}>
+        <div style={{fontSize:68,animation:"hb 2.4s ease-in-out infinite",lineHeight:1,marginBottom:6}}>🔥</div>
+        <h1 style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(48px,13vw,76px)",fontWeight:900,
+          background:"linear-gradient(130deg,#e8175d,#d4a853,#e8175d)",backgroundSize:"200%",
+          WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",
+          animation:"shimmer 3s linear infinite",lineHeight:.9,letterSpacing:".07em",marginBottom:6}}>SOUL<br/>FLARE</h1>
+        <p style={{color:"#9a8aaa",fontStyle:"italic",fontSize:15,letterSpacing:".22em",marginBottom:6}}>where love burns brightest</p>
+        <HR/>
+        <p style={{color:"#c4b0d8",fontSize:14,lineHeight:1.8,margin:"10px 0 16px",padding:"0 6px"}}>
+          The most unpredictable, adaptive, and addictive couple experience. No two games are ever the same.
+        </p>
+        <div style={{display:"flex",gap:6,flexWrap:"wrap",justifyContent:"center",marginBottom:18}}>
+          {[["❤️‍🔥","Adaptive"],["⚡","Chaos Events"],["🌶️","Branching"],["🧩","Puzzles"],["🍾","Spin"],["🃏","Fate"],["🎯","Missions"]].map(([e,l])=>(
+            <span key={l} style={{background:"#ffffff09",border:"1px solid #ffffff15",color:"#c4b0d8",padding:"3px 9px",borderRadius:20,fontSize:11}}>{e} {l}</span>
+          ))}
+        </div>
+        <button className="sfb" onClick={()=>setScreen("setup")} style={{width:"100%",padding:17,
+          background:"linear-gradient(135deg,#e8175d,#a8083e)",borderRadius:14,fontSize:18,
+          fontFamily:"'Playfair Display',serif",fontWeight:700,color:"#fff",
+          marginBottom:9,animation:"glow 2.6s ease-in-out infinite"}}>Begin the Journey ✨</button>
+        {canInstall&&(
+          <button className="sfb" onClick={handleInstall} style={{width:"100%",padding:11,
+            background:"#110820",border:"1px solid #d4a85340",borderRadius:12,
+            color:"#d4a853",fontSize:14,fontFamily:"'Playfair Display',serif",marginBottom:9}}>
+            📱 Install SoulFlare App</button>
+        )}
+        <p style={{color:"#4a3a5a",fontSize:11}}>2–12 players · Adaptive rounds · 18+ content possible</p>
+      </div>
+    </div>
+  );
+
+  /* ══════════════════════════════════════
+     SETUP + ARCHETYPE
+     ══════════════════════════════════════ */
+  if(screen==="setup"){
+    const cpls=getCouples(),circ=2*Math.PI*28;
+    return(
+      <div style={{...root,justifyContent:"flex-start"}}><Sparks/>
+        <div style={{width:"100%",maxWidth:480,minHeight:"100dvh",overflowY:"auto",padding:"16px 14px",position:"relative",zIndex:1}}>
+          <div style={{textAlign:"center",marginBottom:16}}>
+            <button onClick={()=>setScreen("welcome")} className="sfb" style={{background:"none",color:"#6a5a7a",fontSize:13,display:"block",margin:"0 auto 7px"}}>← Back</button>
+            <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:26,color:"#e8175d"}}>Who's Playing? 🎭</h2>
+          </div>
+          {/* Add player */}
+          <div style={{background:"#110820",border:"1px solid #1e1030",borderRadius:14,padding:15,marginBottom:13}}>
+            <input className="sfi" value={newName} onChange={e=>setNewName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addPlayer()}
+              placeholder="Enter name…" maxLength={20} style={{width:"100%",background:"#09051a",border:"1px solid #1e1030",borderRadius:9,
+                padding:"10px 12px",color:"#f5e6d3",fontSize:16,marginBottom:8}}/>
+            <div style={{display:"flex",gap:7,marginBottom:8}}>
+              {["female","male","other"].map(g=>(
+                <button key={g} className="sfb" onClick={()=>setNewGender(g)} style={{flex:1,padding:"8px 4px",
+                  background:newGender===g?"#e8175d":"#09051a",border:`1px solid ${newGender===g?"#e8175d":"#1e1030"}`,
+                  borderRadius:8,color:newGender===g?"#fff":"#6a5a7a",fontSize:12}}>
+                  {g==="female"?"♀ Female":g==="male"?"♂ Male":"⚧ Other"}</button>
+              ))}
+            </div>
+            <button className="sfb" onClick={addPlayer} disabled={!newName.trim()||players.length>=12} style={{width:"100%",padding:10,
+              background:!newName.trim()?"#1a1030":"linear-gradient(135deg,#e8175d,#a8083e)",
+              borderRadius:8,color:!newName.trim()?"#4a3a5a":"#fff",fontSize:14,fontFamily:"'Playfair Display',serif",fontWeight:700}}>
+              + Add Player ({players.length}/12)</button>
+          </div>
+          {players.length>0&&(
+            <div style={{marginBottom:13}}>
+              <p style={{color:"#d4a853",fontSize:12,fontStyle:"italic",marginBottom:6}}>💑 Tap two to link as a couple</p>
+              {players.map(p=>{
+                const pt=players.find(x=>x.id===p.partner),sel=linkStep===p.id;
+                return(
+                  <div key={p.id} onClick={()=>linkPlayers(p.id)} style={{display:"flex",alignItems:"center",gap:9,cursor:"pointer",
+                    background:sel?"#e8175d14":p.partner?"#d4a85310":"#110820",
+                    border:`1px solid ${sel?"#e8175d":p.partner?"#d4a85340":"#1e1030"}`,
+                    borderRadius:10,padding:"9px 12px",marginBottom:5,transition:"all .2s",
+                    animation:sel?"pulse .9s ease-in-out infinite":"none"}}>
+                    <span style={{fontSize:22}}>{p.gender==="female"?"👩":p.gender==="male"?"👨":"🧑"}</span>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:16,color:sel?"#e8175d":p.partner?"#f5e6d3":"#c4b0d8",fontWeight:600}}>{p.name}</div>
+                      <div style={{fontSize:11,color:"#6a5a7a"}}>{p.partner?`💑 With ${pt?.name}`:sel?"Tap partner to link…":"Tap to select"}</div>
+                    </div>
+                    <button onClick={e=>{e.stopPropagation();removePlayer(p.id);}} className="sfb" style={{background:"none",color:"#4a3a5a",fontSize:14,padding:"3px 7px"}}>🗑</button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          {/* Archetype selector */}
+          <div style={{marginBottom:13}}>
+            <p style={{color:"#d4a853",fontSize:13,fontStyle:"italic",marginBottom:7}}>⚡ Choose Your Couple Archetype</p>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7}}>
+              {ARCHETYPES.map(a=>(
+                <button key={a.id} className="sfb" onClick={()=>setArchetype(a.id)} style={{
+                  padding:"10px 8px",textAlign:"left",borderRadius:11,
+                  background:archetype===a.id?"#e8175d18":"#110820",
+                  border:`1px solid ${archetype===a.id?"#e8175d":"#1e1030"}`,transition:"all .2s"}}>
+                  <div style={{fontSize:20,marginBottom:3}}>{a.emoji}</div>
+                  <div style={{fontSize:13,color:archetype===a.id?"#f5e6d3":"#c4b0d8",fontWeight:600,marginBottom:2}}>{a.label}</div>
+                  <div style={{fontSize:11,color:"#6a5a7a",lineHeight:1.4}}>{a.desc}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+          {cpls.length>0&&(
+            <div style={{background:"#d4a85310",border:"1px solid #d4a85330",borderRadius:11,padding:"10px 14px",marginBottom:12}}>
+              <p style={{color:"#d4a853",fontWeight:600,marginBottom:4,fontSize:13}}>💑 {cpls.length} couple{cpls.length>1?"s":""} ready</p>
+              {cpls.map((c,i)=><p key={i} style={{color:"#a090b8",fontSize:13}}>{c[0].name} ♥ {c[1].name}</p>)}
+            </div>
+          )}
+          <button className="sfb" onClick={handleIgnite} style={{width:"100%",padding:16,
+            background:cpls.length&&archetype?"linear-gradient(135deg,#e8175d,#a8083e)":"#1a1030",
+            borderRadius:13,color:cpls.length&&archetype?"#fff":"#4a3a5a",fontSize:17,
+            fontFamily:"'Playfair Display',serif",fontWeight:700,
+            boxShadow:cpls.length&&archetype?"0 0 28px rgba(232,23,93,.38)":"none",marginBottom:16}}>
+            {!cpls.length?"Link a couple first":!archetype?"Choose your archetype":"🔥 Ignite SoulFlare"}
+          </button>
+        </div>
+        {/* Continue modal */}
+        {contPrompt&&(()=>{
+          const sv=loadG(),circ2=2*Math.PI*28;
+          return(
+            <div style={{position:"fixed",inset:0,background:"rgba(6,2,14,.97)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:300,padding:20}}>
+              <div style={{background:"#110820",border:"1px solid #e8175d44",borderRadius:20,padding:"22px 18px",maxWidth:340,width:"100%",textAlign:"center",animation:"rise .4s ease"}}>
+                <div style={{fontSize:46,marginBottom:7}}>🔥</div>
+                <h3 style={{fontFamily:"'Playfair Display',serif",fontSize:20,color:"#e8175d",marginBottom:7}}>Continue Your Journey?</h3>
+                {sv&&<p style={{color:"#d4a853",fontSize:12,fontStyle:"italic",marginBottom:10}}>Round {(sv.round||0)+1} · 💎{sv.points||0}pts · 🔥{sv.flameE||50} energy</p>}
+                <div style={{position:"relative",width:64,height:64,margin:"0 auto 8px"}}>
+                  <svg width="64" height="64" style={{transform:"rotate(-90deg)"}}>
+                    <circle cx="32" cy="32" r="28" fill="none" stroke="#1a1030" strokeWidth="4"/>
+                    <circle cx="32" cy="32" r="28" fill="none" stroke="#e8175d" strokeWidth="4"
+                      strokeDasharray={circ2} strokeDashoffset={circ2*(1-contCount/6)} style={{transition:"stroke-dashoffset .95s linear"}}/>
+                  </svg>
+                  <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",
+                    fontFamily:"'Playfair Display',serif",fontSize:22,color:"#e8175d",fontWeight:700}}>{contCount}</div>
+                </div>
+                <p style={{color:"#4a3a5a",fontSize:11,marginBottom:14,animation:"flicker 1.4s infinite"}}>New game in {contCount}s…</p>
+                <div style={{display:"flex",gap:8}}>
+                  <button className="sfb" onClick={()=>{clearInterval(contRef.current);setContPrompt(false);beginNew(pendRef.current);}}
+                    style={{flex:1,padding:11,background:"#09051a",border:"1px solid #1e1030",borderRadius:10,color:"#6a5a7a",fontSize:13,fontFamily:"'Playfair Display',serif"}}>New</button>
+                  <button className="sfb" onClick={resumeGame}
+                    style={{flex:1,padding:11,background:"linear-gradient(135deg,#e8175d,#a8083e)",borderRadius:10,color:"#fff",fontSize:13,fontFamily:"'Playfair Display',serif",fontWeight:700}}>Continue 🔥</button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+      </div>
+    );
+  }
+
+  /* ══════════════════════════════════════
+     GAME SCREEN
+     ══════════════════════════════════════ */
+  if(screen==="game"){
+    const couple=couplesRef.current[0]||[];
+    const p1=couple[0]||{name:"Partner 1",gender:"female"};
+    const p2=couple[1]||{name:"Partner 2",gender:"male"};
+    const prog=round/totalRnds*100;
+    const isSpinR=roundType==="spin",isFateR=roundType==="fate";
+    const canGo=(!isSpinR||!!spinRes)&&(!isFateR||fateFlip);
+    const nextLabel=isSpinR&&!spinRes?"🍾 Spin First!":isFateR&&!fateFlip?"🃏 Draw Your Card!":round+1>=totalRnds?"🎊 Complete!":"Next →";
+    const fateTc={question:"#e8175d",activity:"#d4a853",quiz:"#9c27b0",dare:"#ff4500"};
+    const female=couple.find?.(x=>x.gender==="female")||p1;
+    const male=couple.find?.(x=>x.gender==="male")||p2;
+    const SZ=238,CX=119,CY=119,R=104;
+    const ZC=["#e8175d","#c2185b","#d4a853","#ff6b35","#9c27b0","#3f51b5","#00897b","#43a047","#fb8c00","#e91e63","#0288d1","#6d4c41"];
+    const arcInfo=ARCHETYPES.find(a=>a.id===archetype)||ARCHETYPES[0];
+
+    const actionBtn=(label,onClick,disabled,style={})=>(
+      <button className="sfb" onClick={onClick} disabled={disabled}
+        style={{width:"100%",padding:15,borderRadius:12,fontSize:16,fontFamily:"'Playfair Display',serif",fontWeight:700,
+          background:disabled?"#1a1030":`linear-gradient(135deg,${energyColor},${energyColor}88)`,
+          color:disabled?"#4a3a5a":"#fff",boxShadow:disabled?"none":`0 0 22px ${energyColor}44`,
+          transition:"all .3s",...style}}>
+        {label}</button>
+    );
+
+    return(
+      <div style={{...root,justifyContent:"flex-start"}}><Sparks/>
+        <div style={{width:"100%",maxWidth:480,minHeight:"100dvh",display:"flex",flexDirection:"column",position:"relative",zIndex:1,padding:"10px 12px"}}>
+
+          {/* ── HEADER ── */}
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+            <div style={{display:"flex",alignItems:"center",gap:5}}>
+              <button className="sfb" onClick={()=>{clearInterval(timerRef.current);window.speechSynthesis?.cancel();setCard(null);setScreen("welcome");}}
+                style={{background:"#110820",border:"1px solid #1e1030",borderRadius:7,padding:"4px 8px",color:"#6a5a7a",fontSize:11}}>🏠</button>
+              <div style={{background:`${energyColor}18`,border:`1px solid ${energyColor}44`,borderRadius:20,
+                padding:"3px 9px",color:energyColor,fontSize:11,fontWeight:700}}>
+                {zi.emoji} {zi.label}</div>
+              {chaosLeft>0&&chaosEv&&(
+                <div style={{background:`${chaosEv.color}18`,border:`1px solid ${chaosEv.color}44`,
+                  borderRadius:20,padding:"3px 8px",color:chaosEv.color,fontSize:11,fontWeight:700,animation:"pulse .8s ease-in-out infinite"}}>
+                  {chaosEv.emoji} ×{chaosLeft}</div>
+              )}
+            </div>
+            <div style={{display:"flex",gap:5,alignItems:"center"}}>
+              {points>0&&<div style={{background:"#d4a85318",border:"1px solid #d4a85344",borderRadius:20,padding:"3px 8px",color:"#d4a853",fontSize:11,fontWeight:700}}>💎{points}</div>}
+              <button className="sfb" onClick={()=>{setVoice(v=>!v);window.speechSynthesis?.cancel();}}
+                style={{background:voice?"#e8175d18":"#1a1030",border:`1px solid ${voice?"#e8175d44":"#1e1030"}`,
+                  borderRadius:7,padding:"4px 7px",color:voice?"#e8175d":"#4a3a5a",fontSize:13}}>{voice?"🔊":"🔇"}</button>
+              <span style={{color:"#5a4a6a",fontSize:11}}>Rnd {round+1}</span>
+            </div>
+          </div>
+
+          {/* ── FLAME ENERGY METER ── */}
+          <div style={{marginBottom:9}}>
+            <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:4}}>
+              <span style={{fontSize:13,animation:flameE>75?"flameDance 0.8s ease-in-out infinite":"none"}}>
+                {flameE>75?"🔥":flameE>50?"🌶️":flameE>25?"✨":"🌱"}
+              </span>
+              <div style={{flex:1,height:6,background:"#1a1030",borderRadius:4,overflow:"hidden"}}>
+                <div style={{height:"100%",width:`${flameE}%`,background:energyBg,borderRadius:4,transition:"width .8s ease"}}/>
+              </div>
+              <span style={{fontSize:10,color:energyColor,fontWeight:700,minWidth:28}}>{flameE}</span>
+            </div>
+            <div style={{height:2,background:"#1a1030",borderRadius:2,overflow:"hidden"}}>
+              <div style={{width:`${prog}%`,height:"100%",background:energyBg,opacity:.5,transition:"width .5s ease"}}/>
+            </div>
+          </div>
+
+          {/* ── ROUND CONTENT ── */}
+          <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",gap:8}}>
+
+            {/* ═══ SPIN ROUND ═══ */}
+            {isSpinR&&(
+              <div style={{animation:"slideUp .5s ease"}}>
+                <div style={{textAlign:"center",marginBottom:9}}>
+                  <span style={{fontSize:40}}>🍾</span>
+                  <h3 style={{fontFamily:"'Playfair Display',serif",fontSize:20,color:"#e8175d",marginTop:3,marginBottom:3}}>Spin the Bottle!</h3>
+                  <div style={{display:"flex",justifyContent:"center",gap:14}}>
+                    <span style={{color:"#e879a0",fontSize:11,fontWeight:700}}>♀ Top · {female.name}</span>
+                    <span style={{color:"#8899e8",fontSize:11,fontWeight:700}}>♂ Bottom · {male.name}</span>
+                  </div>
+                </div>
+                <div style={{position:"relative",width:SZ,height:SZ,margin:"0 auto 10px"}}>
+                  <svg width={SZ} height={SZ} viewBox={`0 0 ${SZ} ${SZ}`} style={{position:"absolute",inset:0}}>
+                    {Array.from({length:12},(_,i)=>{
+                      const sa=(i*30-90)*Math.PI/180,ea=((i+1)*30-90)*Math.PI/180;
+                      const x1=CX+R*Math.cos(sa),y1=CY+R*Math.sin(sa),x2=CX+R*Math.cos(ea),y2=CY+R*Math.sin(ea);
+                      const mx=CX+(R*.63)*Math.cos((sa+ea)/2),my=CY+(R*.63)*Math.sin((sa+ea)/2);
+                      const hi=spinRes&&(i===spinRes.top||i===spinRes.bot);
+                      return(<g key={i}>
+                        <path d={`M${CX} ${CY} L${x1} ${y1} A${R} ${R} 0 0 1 ${x2} ${y2} Z`}
+                          fill={hi?"#fff":ZC[i]} opacity={hi?1:.78} stroke="#06020e" strokeWidth="1.5"/>
+                        <text x={mx} y={my} textAnchor="middle" dominantBaseline="middle" fontSize="9" fill={hi?"#06020e":"#fff"}
+                          fontWeight="700" style={{fontFamily:"Arial,sans-serif",userSelect:"none"}}>{i+1}</text>
+                      </g>);
+                    })}
+                    <circle cx={CX} cy={CY} r={15} fill="#09051a" stroke="#d4a853" strokeWidth="2"/>
+                  </svg>
+                  <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",pointerEvents:"none"}}>
+                    <div style={{width:8,height:SZ*.84,transform:`rotate(${spinAngle}deg)`,
+                      transition:spinning?"transform 3.8s cubic-bezier(0.17,0.67,0.08,0.99)":"none",
+                      transformOrigin:"50% 50%",display:"flex",flexDirection:"column",borderRadius:4}}>
+                      <div style={{flex:1,background:"linear-gradient(to bottom,#f48fb1,#e8175d)",borderRadius:"4px 4px 0 0"}}/>
+                      <div style={{flex:1,background:"linear-gradient(to bottom,#5c6bc0,#1a237e)",borderRadius:"0 0 4px 4px"}}/>
+                    </div>
+                    <div style={{position:"absolute",width:13,height:13,borderRadius:"50%",background:"#d4a853",border:"2px solid #06020e"}}/>
+                  </div>
+                </div>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"3px 7px",background:"#09051a",borderRadius:9,padding:"7px 9px",marginBottom:9}}>
+                  {ZONES.map((z,i)=>{const hi=spinRes&&(i===spinRes.top||i===spinRes.bot);return(
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:3,opacity:hi?1:.35}}>
+                      <div style={{width:14,height:14,borderRadius:"50%",background:ZC[i],flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                        <span style={{fontSize:7,color:"#fff",fontWeight:"700"}}>{i+1}</span>
+                      </div>
+                      <span style={{fontSize:9,color:hi?"#f5e6d3":"#5a4a6a",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{z.n}</span>
+                    </div>);
+                  })}
+                </div>
+                {!spinRes&&(<button className="sfb" onClick={handleSpin} disabled={spinning}
+                  style={{width:"100%",padding:13,background:spinning?"#1a1030":"linear-gradient(135deg,#e8175d,#a8083e)",
+                    borderRadius:11,color:spinning?"#4a3a5a":"#fff",fontSize:16,fontFamily:"'Playfair Display',serif",
+                    fontWeight:700,marginBottom:8,boxShadow:spinning?"none":"0 0 20px #e8175d44"}}>
+                  {spinning?"Spinning…":"🍾 Tap to Spin!"}</button>)}
+                {spinRes&&!spinning&&(
+                  <div style={{animation:"pop .4s ease"}}>
+                    <div style={{background:"#e879a014",border:"1px solid #e879a033",borderRadius:10,padding:"9px 12px",marginBottom:7}}>
+                      <p style={{color:"#e879a0",fontSize:10,fontWeight:700,marginBottom:3}}>♀ {female.name} — Zone {spinRes.top+1}: {ZONES[spinRes.top].n}</p>
+                      <p style={{color:"#d0bce8",fontSize:13,lineHeight:1.65}}>{ZONES[spinRes.top].f}</p>
+                    </div>
+                    <div style={{background:"#3f51b514",border:"1px solid #5c6bc033",borderRadius:10,padding:"9px 12px"}}>
+                      <p style={{color:"#8899e8",fontSize:10,fontWeight:700,marginBottom:3}}>♂ {male.name} — Zone {spinRes.bot+1}: {ZONES[spinRes.bot].n}</p>
+                      <p style={{color:"#d0bce8",fontSize:13,lineHeight:1.65}}>{ZONES[spinRes.bot].m}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ═══ FATE ROUND ═══ */}
+            {isFateR&&(
+              <div style={{animation:"slideUp .5s ease"}}>
+                <div style={{textAlign:"center",marginBottom:11}}>
+                  <span style={{fontSize:40}}>🃏</span>
+                  <h3 style={{fontFamily:"'Playfair Display',serif",fontSize:20,color:"#d4a853",marginTop:3,marginBottom:3}}>Cards of Fate</h3>
+                  <p style={{color:fateTurn%2===0?"#e8175d":"#d4a853",fontSize:13,fontWeight:700}}>
+                    {fateTurn%2===0?p1.name:p2.name}'s turn to draw 🃏</p>
+                </div>
+                {!fateFlip?(
+                  <div onClick={()=>setFateFlip(true)} style={{cursor:"pointer",
+                    background:"linear-gradient(148deg,#1a0a38,#0c0520)",border:"2px solid #d4a85344",
+                    borderRadius:18,padding:26,textAlign:"center",animation:"goldGlow 2.8s ease-in-out infinite"}}>
+                    <div style={{fontSize:52,marginBottom:8}}>🃏</div>
+                    <p style={{fontFamily:"'Playfair Display',serif",fontSize:20,color:"#d4a853",fontWeight:900,letterSpacing:".06em",marginBottom:5}}>FATE</p>
+                    <p style={{color:"#5a4a6a",fontSize:12}}>Tap to reveal your fate</p>
+                  </div>
+                ):(fateCard&&(
+                  <div style={{background:"linear-gradient(148deg,#150b28,#0e0620)",
+                    border:`2px solid ${fateTc[fateCard.type]||"#d4a853"}44`,
+                    borderRadius:18,padding:16,animation:"flipCard .5s ease",
+                    boxShadow:`0 0 40px ${fateTc[fateCard.type]||"#d4a853"}18`}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+                      <span style={{background:`${fateTc[fateCard.type]||"#d4a853"}18`,
+                        border:`1px solid ${fateTc[fateCard.type]||"#d4a853"}44`,
+                        color:fateTc[fateCard.type]||"#d4a853",
+                        padding:"3px 11px",borderRadius:20,fontSize:11,textTransform:"uppercase",fontWeight:700,letterSpacing:".1em"}}>
+                        {fateCard.type}</span>
+                      <span style={{fontSize:34}}>{fateCard.emoji}</span>
+                    </div>
+                    <h4 style={{fontFamily:"'Playfair Display',serif",fontSize:20,color:"#f5e6d3",marginBottom:10,lineHeight:1.2}}>{fateCard.title}</h4>
+                    <p style={{fontSize:14,lineHeight:1.82,color:"#d0bce8"}}>{fateCard.body}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* ═══ REGULAR / PUZZLE / ACTIVITY CARD ═══ */}
+            {!isSpinR&&!isFateR&&(card?(
+              <div style={{
+                background:card.cat==="activity"?"linear-gradient(148deg,#1a1028,#0e0818)":
+                           card.cat==="spicy"?"linear-gradient(148deg,#220a12,#0e0618)":
+                           card.rarity==="legendary"?"linear-gradient(148deg,#1a1200,#0e0800)":
+                           "linear-gradient(148deg,#150b24,#0e0618)",
+                border:`1px solid ${card.rarity==="legendary"?"#d4a85366":energyColor+"44"}`,
+                borderRadius:18,padding:17,
+                boxShadow:card.rarity==="legendary"
+                  ?`0 0 60px #d4a85322,inset 0 1px 0 #d4a85322,animation:goldGlow 2s infinite`
+                  :`0 0 40px ${energyColor}18,inset 0 1px 0 ${energyColor}1a`,
+                animation:cardAnim?"reveal .6s ease":"none"}}>
+
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:9}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6}}>
+                    <span style={{background:`${energyColor}20`,border:`1px solid ${energyColor}44`,color:energyColor,
+                      padding:"3px 9px",borderRadius:20,fontSize:10,textTransform:"uppercase",letterSpacing:".1em",fontWeight:700}}>
+                      {card.cat==="activity"?"🏃 CHALLENGE":card.rarity==="legendary"?"✨ LEGENDARY":card.rarity==="epic"?"⚡ EPIC":card.rarity==="rare"?"💎 RARE":`${card.cat}`}
+                    </span>
+                    {card.rarity==="legendary"&&<span style={{fontSize:11,color:"#d4a853",animation:"flicker 1.2s infinite"}}>RARE DROP</span>}
+                  </div>
+                  <div style={{display:"flex",gap:2}}>
+                    {Array.from({length:Math.min(10,card.hot)}).map((_,i)=>(
+                      <div key={i} style={{width:4,height:12,borderRadius:2,
+                        background:i<card.hot?energyColor:"#1a1030"}}/>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{background:"#09051a",borderRadius:8,padding:"5px 10px",marginBottom:9,border:"1px solid #1a0e28"}}>
+                  <p style={{color:"#d4a853",fontSize:12,fontWeight:600}}>🎯 {card.couple||"All Couples"}</p>
+                </div>
+
+                <h3 style={{fontFamily:"'Playfair Display',serif",fontSize:20,color:"#f5e6d3",marginBottom:8,lineHeight:1.3}}>{card.title}</h3>
+
+                {/* Puzzle UI */}
+                {puzData&&!puzDone?(
+                  <div style={{marginBottom:8}}>
+                    <p style={{fontSize:13,color:"#c4b0d8",marginBottom:7,lineHeight:1.6}}>{puzData.q}</p>
+                    {puzDouble&&<p style={{color:"#ffd700",fontSize:11,fontWeight:700,marginBottom:6,animation:"pulse .7s ease-in-out infinite"}}>🎯 DOUBLE DOWN — {puzData.pts*2} pts or -8 pts!</p>}
+                    <div style={{background:"#09051a",border:"1px solid #d4a85333",borderRadius:10,padding:"10px 12px",marginBottom:8,textAlign:"center"}}>
+                      <p style={{fontSize:16,color:"#d4a853",fontFamily:"'Playfair Display',serif",letterSpacing:".1em",lineHeight:1.6}}>{puzData.clue}</p>
+                    </div>
+                    {puzSel===null?(
+                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                        {puzData.opts.map((opt,i)=>(
+                          <button key={i} className="sfb" onClick={()=>{
+                            const ok=opt===puzData.ans; setPuzSel(i);
+                            if(ok){const np=points+(puzDouble?puzData.pts*2:puzData.pts);setPoints(np);addFlame(14);}
+                            else if(puzDouble){setPoints(p=>Math.max(0,p-8));addFlame(-5);}
+                            setTimeout(()=>setPuzDone(true),1100);
+                          }} style={{padding:"8px 6px",background:"#110820",border:"1px solid #1e1030",borderRadius:9,color:"#c4b0d8",fontSize:13}}>
+                            {opt}</button>
+                        ))}
+                      </div>
+                    ):(
+                      <div style={{padding:11,borderRadius:9,
+                        background:puzData.opts[puzSel]===puzData.ans?"#00880020":"#e8175d18",
+                        border:`1px solid ${puzData.opts[puzSel]===puzData.ans?"#00880044":"#e8175d44"}`,textAlign:"center"}}>
+                        <p style={{fontSize:13,fontWeight:700,color:puzData.opts[puzSel]===puzData.ans?"#4caf50":"#e8175d"}}>
+                          {puzData.opts[puzSel]===puzData.ans?`✓ Correct! +${puzDouble?puzData.pts*2:puzData.pts} pts`:`✗ Answer: ${puzData.ans}${puzDouble?" (-8 pts)":""}`}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ):(
+                  <p style={{fontSize:15,lineHeight:1.85,color:"#d0bce8",marginBottom:9}}>{card.inst}</p>
+                )}
+
+                {/* Timer */}
+                {timerOn&&(
+                  <div style={{background:"#09051a",borderRadius:10,padding:8,textAlign:"center",marginBottom:8,
+                    border:`1px solid ${timeLeft<10?"#e8175d":"#1a0e28"}`}}>
+                    <div style={{fontSize:32,fontFamily:"'Playfair Display',serif",
+                      color:timeLeft<10?"#e8175d":"#d4a853",animation:timeLeft<10?"pulse .5s ease-in-out infinite":"none"}}>
+                      {Math.floor(timeLeft/60).toString().padStart(2,"0")}:{(timeLeft%60).toString().padStart(2,"0")}
+                    </div>
+                  </div>
+                )}
+
+                {card.fu&&(!puzData||puzDone)&&(
+                  <><HR/><p style={{fontSize:13,color:"#7a6a8a",fontStyle:"italic",lineHeight:1.7,marginTop:7}}>✨ {card.fu}</p></>
+                )}
+              </div>
+            ):(
+              <div style={{textAlign:"center",padding:"36px 0"}}>
+                <div style={{width:36,height:36,border:`3px solid ${energyColor}33`,borderTop:`3px solid ${energyColor}`,
+                  borderRadius:"50%",animation:"spin360 1s linear infinite",margin:"0 auto 10px"}}/>
+                <p style={{color:"#5a4a6a",fontStyle:"italic",fontSize:13}}>The flame is choosing…</p>
+              </div>
+            ))}
+          </div>
+
+          {/* ── FOOTER ── */}
+          <div style={{paddingTop:10,paddingBottom:4}}>
+            {actionBtn(nextLabel,handleCardComplete,!canGo,{marginBottom:6})}
+            {card&&voice&&!isSpinR&&!isFateR&&(
+              <button className="sfb" onClick={()=>speak(card.inst)} style={{width:"100%",padding:8,background:"#110820",border:"1px solid #1e1030",borderRadius:9,color:"#7a6a8a",fontSize:12}}>🔊 Replay</button>
+            )}
+          </div>
+        </div>
+
+        {/* ═══ CHAOS EVENT OVERLAY ═══ */}
+        {showChaos&&chaosEv&&(
+          <div style={{position:"fixed",inset:0,background:"rgba(6,2,14,.92)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:200,padding:20}}>
+            <div style={{background:`linear-gradient(148deg,${chaosEv.color}18,#110820)`,
+              border:`2px solid ${chaosEv.color}66`,borderRadius:22,padding:"24px 20px",
+              maxWidth:360,width:"100%",textAlign:"center",animation:"chaosIn .5s cubic-bezier(0.34,1.56,0.64,1)"}}>
+              <div style={{fontSize:64,marginBottom:8,animation:"hb 1.2s ease-in-out infinite"}}>{chaosEv.emoji}</div>
+              <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:26,color:chaosEv.color,marginBottom:4,letterSpacing:".04em"}}>{chaosEv.name}</h2>
+              <p style={{color:chaosEv.color,fontSize:13,fontStyle:"italic",marginBottom:14}}>{chaosEv.sub}</p>
+              <HR c={chaosEv.color}/>
+              <p style={{color:"#d0bce8",fontSize:15,lineHeight:1.78,marginTop:10}}>{chaosEv.desc}</p>
+              <p style={{color:"#5a4a6a",fontSize:12,marginTop:16,animation:"flicker 1.2s infinite"}}>Activating in a moment…</p>
+            </div>
+          </div>
+        )}
+
+        {/* ═══ BRANCH CHOICE OVERLAY ═══ */}
+        {showBranch&&(
+          <div style={{position:"fixed",inset:0,background:"rgba(6,2,14,.9)",display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:200,padding:"0 14px 20px"}}>
+            <div style={{background:"#110820",border:"1px solid #e8175d33",borderRadius:20,padding:"20px 16px",
+              maxWidth:460,width:"100%",animation:"branchIn .4s cubic-bezier(0.34,1.56,0.64,1)"}}>
+              <p style={{color:"#e8175d",fontSize:12,fontWeight:700,textAlign:"center",letterSpacing:".12em",marginBottom:4}}>🔱 A MOMENT OF CHOICE</p>
+              <h3 style={{fontFamily:"'Playfair Display',serif",fontSize:20,color:"#f5e6d3",textAlign:"center",marginBottom:16}}>How do you want to continue?</h3>
+              <div style={{display:"flex",gap:8}}>
+                {[
+                  {label:"🔥 Go Deeper",desc:"We want more intensity",depth:1,color:"#ff4500"},
+                  {label:"💙 Stay Here",desc:"This pace feels right",depth:0,color:"#e8175d"},
+                  {label:"🌊 Breathe",desc:"We need a gentle moment",depth:-1,color:"#42a5f5"},
+                ].map(b=>(
+                  <button key={b.depth} className="sfb" onClick={()=>chooseBranch(b.depth)} style={{flex:1,
+                    padding:"11px 6px",textAlign:"center",background:`${b.color}14`,
+                    border:`1px solid ${b.color}44`,borderRadius:12,color:b.color}}>
+                    <div style={{fontSize:15,fontWeight:700,marginBottom:3}}>{b.label}</div>
+                    <div style={{fontSize:10,color:"#8a7a9a"}}>{b.desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ═══ AGE GATE ═══ */}
+        {ageWarned&&(
+          <div style={{position:"fixed",inset:0,background:"rgba(6,2,14,.96)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:20}}>
+            <div style={{background:"#110820",border:"1px solid #ff450055",borderRadius:18,padding:22,maxWidth:340,textAlign:"center",animation:"rise .5s ease"}}>
+              <div style={{fontSize:52,marginBottom:8}}>🔥</div>
+              <h3 style={{fontFamily:"'Playfair Display',serif",fontSize:22,color:"#ff4500",marginBottom:8}}>Adult Content Ahead</h3>
+              <p style={{color:"#c4b0d8",fontSize:13,lineHeight:1.78,marginBottom:14}}>This card contains 18+ content. All players confirm they are adults.</p>
+              <HR c="#ff4500"/>
+              <div style={{display:"flex",gap:8,marginTop:12}}>
+                <button className="sfb" onClick={()=>{setAgeWarned(false);goNext();}} style={{flex:1,padding:11,background:"#1a1030",border:"1px solid #1e1030",borderRadius:10,color:"#6a5a7a",fontSize:13,fontFamily:"'Playfair Display',serif"}}>Skip</button>
+                <button className="sfb" onClick={confirmAge} style={{flex:1,padding:11,background:"linear-gradient(135deg,#ff4500,#c2185b)",borderRadius:10,color:"#fff",fontSize:13,fontFamily:"'Playfair Display',serif",fontWeight:700}}>We're Adults 🔥</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  /* ══════════════════════════════════════
+     FINALE
+     ══════════════════════════════════════ */
+  if(screen==="finale") return(
+    <div style={root}><Sparks/>
+      <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at center,${energyColor}12 0%,transparent 68%)`,pointerEvents:"none"}}/>
+      <div style={{textAlign:"center",zIndex:1,maxWidth:400,padding:"20px 16px",overflowY:"auto",maxHeight:"100dvh",animation:"rise .8s ease"}}>
+        <div style={{fontSize:68,animation:"heartbeat 1.6s ease-in-out infinite",marginBottom:10}}>❤️‍🔥</div>
+        <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(28px,9vw,46px)",
+          background:`linear-gradient(135deg,#e8175d,#d4a853)`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:6}}>
+          SoulFlare Complete!</h2>
+        {couples.length>0&&<p style={{color:"#d4a853",fontSize:14,fontStyle:"italic",marginBottom:6}}>
+          {couples.map(c=>`${c[0].name} & ${c[1].name}`).join(" · ")}</p>}
+        <HR/>
+
+        {/* Flame score */}
+        <div style={{background:"#110820",border:`1px solid ${energyColor}33`,borderRadius:14,padding:14,marginBottom:12}}>
+          <div style={{display:"flex",justifyContent:"space-around"}}>
+            <div style={{textAlign:"center"}}>
+              <p style={{color:"#5a4a6a",fontSize:11,marginBottom:2}}>FLAME ENERGY</p>
+              <p style={{color:energyColor,fontSize:26,fontWeight:700,fontFamily:"'Playfair Display',serif"}}>{flameE}/100</p>
+            </div>
+            <div style={{width:1,background:"#1e1030"}}/>
+            <div style={{textAlign:"center"}}>
+              <p style={{color:"#5a4a6a",fontSize:11,marginBottom:2}}>POINTS</p>
+              <p style={{color:"#d4a853",fontSize:26,fontWeight:700,fontFamily:"'Playfair Display',serif"}}>💎{points}</p>
+            </div>
+            <div style={{width:1,background:"#1e1030"}}/>
+            <div style={{textAlign:"center"}}>
+              <p style={{color:"#5a4a6a",fontSize:11,marginBottom:2}}>ROUNDS</p>
+              <p style={{color:"#c4b0d8",fontSize:26,fontWeight:700,fontFamily:"'Playfair Display',serif"}}>{round}</p>
+            </div>
+          </div>
+          {(points>=30||flameE>=80)&&(
+            <div style={{marginTop:11,padding:"10px",background:"#e8175d14",border:"1px solid #e8175d44",borderRadius:10,animation:"pop .6s ease"}}>
+              <p style={{color:"#e8175d",fontSize:16,fontWeight:700,fontFamily:"'Playfair Display',serif",marginBottom:2}}>🏆 SoulFlare Couple!</p>
+              <p style={{color:"#c4b0d8",fontSize:12}}>You burned bright and went all the way. This title is yours.</p>
+            </div>
+          )}
+        </div>
+
+        {/* Secret Mission reveal */}
+        {mission&&(
+          <div style={{background:"#110820",border:"1px solid #d4a85333",borderRadius:14,padding:14,marginBottom:12}}>
+            {!showMission?(
+              <button className="sfb" onClick={()=>setShowMission(true)} style={{width:"100%",padding:11,
+                background:"linear-gradient(135deg,#d4a853,#c49040)",borderRadius:10,
+                color:"#06020e",fontSize:14,fontFamily:"'Playfair Display',serif",fontWeight:700}}>
+                🔮 Reveal Your Secret Mission</button>
+            ):(
+              <div>
+                <p style={{color:"#d4a853",fontSize:12,fontWeight:700,marginBottom:6,letterSpacing:".1em"}}>YOUR SECRET MISSION WAS:</p>
+                <p style={{color:"#f5e6d3",fontSize:14,lineHeight:1.7,marginBottom:10}}>{mission.task}</p>
+                <p style={{color:"#5a4a6a",fontSize:12,marginBottom:8}}>Did you complete it?</p>
+                {!missionDone?(
+                  <div style={{display:"flex",gap:7}}>
+                    <button className="sfb" onClick={()=>{setMissionDone(true);}} style={{flex:1,padding:9,background:"#1a1030",border:"1px solid #1e1030",borderRadius:9,color:"#6a5a7a",fontSize:13}}>✗ Not quite</button>
+                    <button className="sfb" onClick={()=>{setMissionDone(true);setPoints(p=>p+mission.pts);}} style={{flex:1,padding:9,background:"linear-gradient(135deg,#d4a853,#c49040)",borderRadius:9,color:"#06020e",fontSize:13,fontWeight:700}}>✓ Yes! +{mission.pts}pts</button>
+                  </div>
+                ):(
+                  <p style={{color:"#4caf50",fontSize:13,fontWeight:700}}>✓ Mission recorded! Final score: 💎{points}</p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        <div style={{background:"#110820",border:"1px solid #d4a85333",borderRadius:13,padding:"13px 16px",marginBottom:16}}>
+          <p style={{color:"#d4a853",fontSize:15,fontStyle:"italic",lineHeight:1.7,marginBottom:5}}>
+            "And now these three remain: faith, hope and love. But the greatest of these is love."</p>
+          <p style={{color:"#5a4a6a",fontSize:11}}>— 1 Corinthians 13:13</p>
+        </div>
+
+        <div style={{display:"flex",gap:8}}>
+          <button className="sfb" onClick={()=>{clearG();setCouples([]);couplesRef.current=[];setPlayers([]);
+            setRound(0);setFlameE(50);setUsedIds([]);setCard(null);setPoints(0);setScreen("welcome");}}
+            style={{flex:1,padding:12,background:"#110820",border:"1px solid #1e1030",borderRadius:11,color:"#8a7a9a",fontSize:14,fontFamily:"'Playfair Display',serif"}}>
+            🏠 Menu</button>
+          <button className="sfb" onClick={()=>{
+            clearG();const cl=couplesRef.current;
+            fateDeckRef.current=shuffle([...FATE]);fateIdxRef.current=0;
+            const tr=22+Math.floor(Math.random()*8);
+            setRound(0);setFlameE(50);flameRef.current=50;setTotalRnds(tr);setUsedIds([]);setPoints(0);
+            setCard(null);setRecentCats([]);setRecentTypes([]);setChaosLeft(0);setChaosEffect(null);
+            setBranchDepth(0);setFateTurn(0);setAgeWarned(false);setMissionDone(false);setShowMission(false);
+            const m=pick(MISSIONS);setMission(m);
+            setScreen("game");speak("Welcome back. The flame has been relit.");
+            startRound(0,cl,[],[],[],50,0,0,null);
+          }} style={{flex:1,padding:12,background:"linear-gradient(135deg,#e8175d,#a8083e)",borderRadius:11,color:"#fff",fontSize:14,fontFamily:"'Playfair Display',serif",fontWeight:700}}>
+            Play Again 🔥</button>
+        </div>
+      </div>
+    </div>
+  );
+
+  return null;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<SoulFlare/>);
+</script>
+<script>
+if('serviceWorker'in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./sw.js')
+      .then(r=>{r.addEventListener('updatefound',()=>{const n=r.installing;n.addEventListener('statechange',()=>{if(n.state==='installed'&&navigator.serviceWorker.controller)n.postMessage({type:'SKIP_WAITING'});});});})
+      .catch(e=>console.warn('SW:',e));
+  });
+}
+</script>
+</body>
+</html>
